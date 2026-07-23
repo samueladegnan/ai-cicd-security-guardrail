@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Architecture | AI-Driven CI/CD Security Guardrail</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Architecture" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping." />
+<meta property="og:description" content="A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping." />
+<link rel="canonical" href="http://0.0.0.0:4000/architecture/" />
+<meta property="og:url" content="http://0.0.0.0:4000/architecture/" />
+<meta property="og:site_name" content="AI-Driven CI/CD Security Guardrail" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Architecture" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping.","headline":"Architecture","url":"http://0.0.0.0:4000/architecture/"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="preload" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" as="style" type="text/css" crossorigin>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#157878">
+<meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="/assets/css/style.css?v=">
+<!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+</head>
+<body>
+<a id="skip-to-content" href="#content">Skip to the content.</a>
+<header class="page-header" role="banner">
+<nav class="site-nav" aria-label="Primary">
+  <div class="site-nav__container">
+    <a class="site-nav__brand" href="/">
+      AI Guardrail
+    </a>
+
+    <ul class="site-nav__links">
+      <li><a  href="/">Home</a></li>
+      <li><a  href="/demo/">Demo</a></li>
+      <li><a class="site-nav__link--active" aria-current="page" href="/architecture/">Architecture</a></li>
+      <li><a  href="/portfolio/">Portfolio</a></li>
+      <li>
+        <a href="https://github.com/samueladegnan/ai-cicd-security-guardrail" target="_blank" rel="noopener noreferrer">
+          GitHub ↗
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<h1 class="project-name">Architecture</h1>
+<h2 class="project-tagline">A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping.</h2>
+
+<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail" class="btn">View on GitHub</a>
+
+
+<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail/zipball/gh-pages" class="btn">Download .zip</a>
+<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail/tarball/gh-pages" class="btn">Download .tar.gz</a>
+
+</header>
+<main id="content" class="main-content" role="main">
+<h1 id="ai-driven-cicd-security-guardrail--architecture">AI-Driven CI/CD Security Guardrail — Architecture</h1>
+
+<h2 id="goals">Goals</h2>
+
+<ul>
+  <li>Reduce false-positive fatigue from static-analysis tools in C/C++ pipelines.</li>
+  <li>Map every finding to one or more compliance controls (CERT C, MISRA C, FIPS 140-3).</li>
+  <li>Use an LLM to classify findings as <strong>High-Priority Security Risk</strong>, <strong>False Positive</strong>, or <strong>Unclear</strong>.</li>
+  <li>Provide a reusable Docker container and native CI/CD integrations for GitHub Actions and Jenkins.</li>
+</ul>
+
+<h2 id="high-level-data-flow">High-Level Data Flow</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                    ┌───────────────────┐
+                    │    SAST Report    │
+                    │ (SARIF/Sonar/XML) │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │      Parser       │
+                    │    (findings)     │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │   Finding Model   │
+                    │  (rule/loc/CWE)   │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │   Triage Engine   │
+                    │  (orchestrator)   │
+                    └───────────────────┘
+                              │
+              ────────┬───────┬───────┬───────
+                      │       │       │
+                      ▼       ▼       ▼
+        ┌───────────┐   ┌───────────┐   ┌───────────┐
+        │ Code      │   │Compliance │   │   LLM     │
+        │ Fetcher   │   │ Mapper    │   │  Client   │
+        │(snippets) │   │(CERT/etc) │   │(classify) │
+        └───────────┘   └───────────┘   └───────────┘
+                              │
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │   Report + Exit   │
+                    │  (JSON/MD/exit)   │
+                    └───────────────────┘
+</code></pre></div></div>
+
+<ol>
+  <li><strong>Ingest</strong> — Parse SARIF, SonarQube JSON, or cppcheck XML into a list of normalized <code class="language-plaintext highlighter-rouge">Finding</code> objects.</li>
+  <li><strong>Enrich</strong> — For each finding, the Triage Engine fetches nearby source code and looks up compliance controls.</li>
+  <li><strong>Classify</strong> — The LLM Client scores the enriched finding as <code class="language-plaintext highlighter-rouge">HIGH_PRIORITY</code>, <code class="language-plaintext highlighter-rouge">FALSE_POSITIVE</code>, or <code class="language-plaintext highlighter-rouge">UNCLEAR</code>.</li>
+  <li><strong>Report</strong> — The CLI aggregates results, writes JSON/Markdown reports, and returns a CI-friendly exit code.</li>
+</ol>
+
+<h2 id="component-responsibilities">Component Responsibilities</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Responsibility</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">guardrail/parsers/</code></td>
+      <td>Convert SARIF, SonarQube JSON, and cppcheck XML into a normalized <code class="language-plaintext highlighter-rouge">Finding</code> model.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">guardrail/compliance/</code></td>
+      <td>Map CWEs to controls in CERT C, MISRA C, and FIPS.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">guardrail/llm_client.py</code></td>
+      <td>Abstract provider-specific API calls. Supports OpenAI, Anthropic, Gemini, and a deterministic mock.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">guardrail/triage.py</code></td>
+      <td>Orchestrate code-context enrichment, compliance mapping, LLM classification, and caching.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">guardrail/cli.py</code></td>
+      <td>Command-line entry point and report formatting.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Dockerfile</code> / <code class="language-plaintext highlighter-rouge">action.yml</code></td>
+      <td>Reusable container and GitHub Action definitions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="design-decisions">Design Decisions</h2>
+
+<ol>
+  <li><strong>CWE as the pivot.</strong> Tool-specific rule IDs are too numerous to map exhaustively. CWE is a stable intermediate layer.</li>
+  <li><strong>Pluggable LLM client.</strong> The abstraction layer keeps CI/CD configurations provider-agnostic.</li>
+  <li><strong>Mock provider for demos.</strong> Running a real LLM in a portfolio demo would require API keys and budget; the mock provider demonstrates the pipeline without cost.</li>
+  <li><strong>Minimal dependencies.</strong> <code class="language-plaintext highlighter-rouge">requests</code>, <code class="language-plaintext highlighter-rouge">pydantic</code>, and <code class="language-plaintext highlighter-rouge">defusedxml</code> cover parsing and typed models without pulling in heavy frameworks.</li>
+  <li><strong>Exit-code semantics.</strong> The tool returns <code class="language-plaintext highlighter-rouge">1</code> when high-priority (or unclear, by default) findings exist, making it a true CI/CD guardrail.</li>
+</ol>
+
+<h2 id="security-and-privacy-considerations">Security and Privacy Considerations</h2>
+
+<ul>
+  <li>Source code snippets are sent to the configured LLM endpoint only when the user opts into a real provider.</li>
+  <li>The mock provider runs entirely locally and never leaves the container.</li>
+  <li>For real providers, follow your organization’s data-handling policy; consider an enterprise LLM gateway or private endpoint.</li>
+</ul>
+
+<h2 id="extending-the-guardrail">Extending the Guardrail</h2>
+
+<ul>
+  <li>Add new parsers by implementing a function with signature <code class="language-plaintext highlighter-rouge">parse_report(path: str) -&gt; List[Finding]</code> and registering it in <code class="language-plaintext highlighter-rouge">guardrail/parsers/__init__.py</code>.</li>
+  <li>Add new compliance frameworks by adding a rules dictionary and including it in <code class="language-plaintext highlighter-rouge">guardrail/compliance/__init__.py</code>.</li>
+  <li>Add new LLM providers by subclassing <code class="language-plaintext highlighter-rouge">LLMClient</code> and updating <code class="language-plaintext highlighter-rouge">get_client()</code>.</li>
+</ul>
+
+
+<footer class="site-footer">
+
+<span class="site-footer-owner"><a href="https://github.com/samueladegnan/ai-cicd-security-guardrail">ai-cicd-security-guardrail</a> is maintained by <a href="https://github.com/samueladegnan">Sam Degnan</a>.</span>
+
+<span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+</footer>
+</main>
+</body>
+</html>

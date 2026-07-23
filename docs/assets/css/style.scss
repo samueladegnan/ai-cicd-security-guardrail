@@ -3,19 +3,15 @@
 
 @import "{{ site.theme }}";
 
-/* Site navigation bar */
+/* Site navigation bar - lives inside the page-header */
 .site-nav {
-  background: #ffffff;
-  border-bottom: 1px solid #e1e4e8;
-  padding: 0.75rem 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: transparent;
+  padding: 1rem 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .site-nav__container {
-  max-width: 900px;
+  max-width: 64rem;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -26,14 +22,16 @@
 
 .site-nav__brand {
   font-weight: 700;
-  font-size: 1.05rem;
-  color: #24292f;
+  font-size: 1.1rem;
+  color: #ffffff;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.site-nav__brand:hover {
-  color: #0969da;
+.site-nav__brand:hover,
+.site-nav__brand:focus {
+  color: #ffffff;
+  text-decoration: none;
 }
 
 .site-nav__links {
@@ -42,7 +40,7 @@
   padding: 0;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -51,24 +49,45 @@
 }
 
 .site-nav__links a {
-  color: #57606a;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
 }
 
 .site-nav__links a:hover,
 .site-nav__links a:focus {
-  color: #0969da;
-  text-decoration: none;
+  color: #ffffff;
+  text-decoration: underline;
 }
 
 .site-nav__links a.site-nav__link--active {
-  color: #0969da;
+  color: #ffffff;
   font-weight: 600;
-  border-bottom: 2px solid #0969da;
+  border-bottom: 2px solid #ffffff;
   padding-bottom: 0.2rem;
+}
+
+.site-nav__links a.site-nav__link--active:hover,
+.site-nav__links a.site-nav__link--active:focus {
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .site-nav {
+    padding: 1rem;
+  }
+
+  .site-nav__container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .site-nav__links {
+    gap: 1rem;
+  }
 }
 
 /* Slight spacing adjustment for the first heading on each page */

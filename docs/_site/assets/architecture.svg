@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 540" width="700" height="540" role="img" aria-label="AI Guardrail Architecture">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect width="700" height="540" fill="#f6f8fa" rx="8"/>
+  <text x="350" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1f2328">AI-Driven CI/CD Security Guardrail</text>
+
+  <!-- SAST Report -->
+  <rect x="260" y="60" width="180" height="50" rx="6" fill="#0969da" fill-opacity="0.1" stroke="#0969da" stroke-width="2"/>
+  <text x="350" y="84" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1f2328">SAST Report</text>
+  <text x="350" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1f2328">SARIF / Sonar / cppcheck</text>
+
+  <!-- Parser -->
+  <rect x="260" y="140" width="180" height="50" rx="6" fill="#1f883d" fill-opacity="0.1" stroke="#1f883d" stroke-width="2"/>
+  <text x="350" y="164" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1f2328">Parser</text>
+  <text x="350" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1f2328">normalize findings</text>
+
+  <!-- Finding Model -->
+  <rect x="260" y="220" width="180" height="50" rx="6" fill="#9a6700" fill-opacity="0.1" stroke="#9a6700" stroke-width="2"/>
+  <text x="350" y="244" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1f2328">Finding Model</text>
+  <text x="350" y="262" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1f2328">rule / location / CWE</text>
+
+  <!-- Triage Engine -->
+  <rect x="100" y="310" width="500" height="140" rx="6" fill="#8250df" fill-opacity="0.08" stroke="#8250df" stroke-width="2" stroke-dasharray="4"/>
+  <text x="350" y="334" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1f2328">Triage Engine</text>
+
+  <!-- Code Fetcher -->
+  <rect x="120" y="360" width="130" height="50" rx="6" fill="#0969da" fill-opacity="0.1" stroke="#0969da" stroke-width="2"/>
+  <text x="185" y="383" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1f2328">Code Fetcher</text>
+  <text x="185" y="401" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1f2328">source snippets</text>
+
+  <!-- Compliance Mapper -->
+  <rect x="285" y="360" width="130" height="50" rx="6" fill="#9a6700" fill-opacity="0.1" stroke="#9a6700" stroke-width="2"/>
+  <text x="350" y="383" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1f2328">Compliance</text>
+  <text x="350" y="401" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1f2328">CERT / MISRA / FIPS</text>
+
+  <!-- LLM Client -->
+  <rect x="450" y="360" width="130" height="50" rx="6" fill="#cf222e" fill-opacity="0.1" stroke="#cf222e" stroke-width="2"/>
+  <text x="515" y="383" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1f2328">LLM Client</text>
+  <text x="515" y="401" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1f2328">classify finding</text>
+
+  <!-- Report + Exit Code -->
+  <rect x="260" y="480" width="180" height="50" rx="6" fill="#1f883d" fill-opacity="0.1" stroke="#1f883d" stroke-width="2"/>
+  <text x="350" y="503" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1f2328">Report + Exit Code</text>
+  <text x="350" y="521" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1f2328">JSON / Markdown / CI</text>
+
+  <!-- Arrows -->
+  <!-- Vertical pipeline -->
+  <line x1="350" y1="110" x2="350" y2="140" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="350" y1="190" x2="350" y2="220" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="350" y1="270" x2="350" y2="310" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Triage Engine outputs to sub-components (upward dashed arrows) -->
+  <line x1="185" y1="360" x2="185" y2="330" stroke="#666" stroke-width="1.5" stroke-dasharray="3" marker-end="url(#arrow)"/>
+  <line x1="350" y1="360" x2="350" y2="330" stroke="#666" stroke-width="1.5" stroke-dasharray="3" marker-end="url(#arrow)"/>
+  <line x1="515" y1="360" x2="515" y2="330" stroke="#666" stroke-width="1.5" stroke-dasharray="3" marker-end="url(#arrow)"/>
+
+  <!-- Sub-components feed results back down to Triage Engine -->
+  <line x1="185" y1="410" x2="185" y2="435" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="350" y1="410" x2="350" y2="435" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="515" y1="410" x2="515" y2="435" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Triage Engine to Report -->
+  <line x1="350" y1="450" x2="350" y2="480" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Demo Walkthrough | AI-Driven CI/CD Security Guardrail</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Demo Walkthrough" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping." />
+<meta property="og:description" content="A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping." />
+<link rel="canonical" href="http://0.0.0.0:4000/demo/" />
+<meta property="og:url" content="http://0.0.0.0:4000/demo/" />
+<meta property="og:site_name" content="AI-Driven CI/CD Security Guardrail" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Demo Walkthrough" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping.","headline":"Demo Walkthrough","url":"http://0.0.0.0:4000/demo/"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="preload" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" as="style" type="text/css" crossorigin>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#157878">
+<meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="/assets/css/style.css?v=">
+<!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+</head>
+<body>
+<a id="skip-to-content" href="#content">Skip to the content.</a>
+<header class="page-header" role="banner">
+<nav class="site-nav" aria-label="Primary">
+  <div class="site-nav__container">
+    <a class="site-nav__brand" href="/">
+      AI Guardrail
+    </a>
+
+    <ul class="site-nav__links">
+      <li><a  href="/">Home</a></li>
+      <li><a class="site-nav__link--active" aria-current="page" href="/demo/">Demo</a></li>
+      <li><a  href="/architecture/">Architecture</a></li>
+      <li><a  href="/portfolio/">Portfolio</a></li>
+      <li>
+        <a href="https://github.com/samueladegnan/ai-cicd-security-guardrail" target="_blank" rel="noopener noreferrer">
+          GitHub ↗
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<h1 class="project-name">Demo Walkthrough</h1>
+<h2 class="project-tagline">A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping.</h2>
+
+<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail" class="btn">View on GitHub</a>
+
+
+<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail/zipball/gh-pages" class="btn">Download .zip</a>
+<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail/tarball/gh-pages" class="btn">Download .tar.gz</a>
+
+</header>
+<main id="content" class="main-content" role="main">
+<h1 id="demo-walkthrough">Demo Walkthrough</h1>
+
+<p>This page shows how to run the guardrail locally, with Docker, and inside CI/CD. All commands below use the built-in <strong>mock</strong> provider, so no API key is required.</p>
+
+<h2 id="1-run-the-tests">1. Run the Tests</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install</span> <span class="nt">-e</span> <span class="s2">".[dev]"</span>
+pytest <span class="nt">-q</span>
+</code></pre></div></div>
+
+<p>Expected output:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>14 passed in 0.83s
+</code></pre></div></div>
+
+<h2 id="2-run-the-cli-with-the-mock-provider">2. Run the CLI with the Mock Provider</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>guardrail tests/fixtures/sample.sarif <span class="se">\</span>
+  <span class="nt">--provider</span> mock <span class="se">\</span>
+  <span class="nt">--repo-root</span> <span class="nb">.</span> <span class="se">\</span>
+  <span class="nt">--output-json</span> report.json <span class="se">\</span>
+  <span class="nt">--output-markdown</span> report.md
+</code></pre></div></div>
+
+<p>Expected output:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Guardrail Summary: {"total":2,"high_priority":1,"false_positive":1,"unclear":0}
+
+High-priority findings:
+  - CWE-121 at sample_code/vulnerable.c:14 (90% confidence)
+</code></pre></div></div>
+
+<p>The exit code is <strong>1</strong> because a high-priority security finding remains — exactly what you want in CI/CD to fail a build.</p>
+
+<p>The command produces:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">report.json</code> — full structured report.</li>
+  <li><code class="language-plaintext highlighter-rouge">report.md</code> — human-readable Markdown summary.</li>
+</ul>
+
+<p>Sample <code class="language-plaintext highlighter-rouge">report.md</code> excerpt:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gh"># AI-Driven CI/CD Security Guardrail Report</span>
+<span class="gu">## Summary</span>
+<span class="p">-</span> <span class="gs">**Total findings triaged:**</span> 2
+<span class="p">-</span> <span class="gs">**High-priority security risks:**</span> 1
+<span class="p">-</span> <span class="gs">**False positives:**</span> 1
+<span class="p">-</span> <span class="gs">**Unclear:**</span> 0
+
+<span class="gu">### CWE-121 @ `sample_code/vulnerable.c:14`</span>
+<span class="p">-</span> <span class="gs">**Verdict:**</span> HIGH_PRIORITY
+<span class="p">-</span> <span class="gs">**Confidence:**</span> 0.90
+<span class="p">-</span> <span class="gs">**Compliance controls:**</span>
+<span class="p">  -</span> CERT_C STR31-C: Guarantee that storage for strings has sufficient space
+<span class="p">-</span> <span class="gs">**Remediation:**</span> Fix or explicitly suppress the validated security issue.
+</code></pre></div></div>
+
+<h2 id="3-show-the-cli-surface">3. Show the CLI Surface</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>guardrail <span class="nt">--help</span>
+</code></pre></div></div>
+
+<p>This is useful for screenshots or recordings.</p>
+
+<h2 id="4-run-with-docker">4. Run with Docker</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build <span class="nt">-t</span> ai-guardrail <span class="nb">.</span>
+docker run <span class="nt">--rm</span> <span class="nt">-v</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">pwd</span><span class="si">)</span><span class="s2">:/workspace"</span> <span class="nt">--workdir</span> /workspace ai-guardrail <span class="se">\</span>
+  tests/fixtures/sample.sarif <span class="se">\</span>
+  <span class="nt">--repo-root</span> /workspace <span class="se">\</span>
+  <span class="nt">--output-markdown</span> /workspace/report.md
+</code></pre></div></div>
+
+<p>The default provider in the image is <code class="language-plaintext highlighter-rouge">mock</code>, so it works out of the box.</p>
+
+<h2 id="5-run-with-a-real-llm-provider">5. Run with a Real LLM Provider</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">GUARDRAIL_LLM_PROVIDER</span><span class="o">=</span>openai
+<span class="nb">export </span><span class="nv">GUARDRAIL_LLM_API_KEY</span><span class="o">=</span>sk-...
+<span class="nb">export </span><span class="nv">GUARDRAIL_LLM_MODEL</span><span class="o">=</span>gpt-4o-mini
+
+guardrail tests/fixtures/sample.sarif <span class="nt">--repo-root</span> <span class="nb">.</span>
+</code></pre></div></div>
+
+<p>You can also pass <code class="language-plaintext highlighter-rouge">--provider</code> directly:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>guardrail tests/fixtures/sample.sarif <span class="nt">--provider</span> openai
+</code></pre></div></div>
+
+<h2 id="6-cicd-demos">6. CI/CD Demos</h2>
+
+<h3 id="github-actions">GitHub Actions</h3>
+
+<p>The repo includes a reusable action. The workflow in <code class="language-plaintext highlighter-rouge">.github/workflows/guardrail.yml</code> runs on every push/PR and fails the build if high-priority findings remain.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">AI Guardrail Triage</span>
+  <span class="na">uses</span><span class="pi">:</span> <span class="s">./</span>
+  <span class="na">with</span><span class="pi">:</span>
+    <span class="na">report-path</span><span class="pi">:</span> <span class="s">./scan-results.sarif</span>
+    <span class="na">provider</span><span class="pi">:</span> <span class="s">anthropic</span>
+    <span class="na">llm-api-key</span><span class="pi">:</span> <span class="s">$</span>
+    <span class="na">output-markdown</span><span class="pi">:</span> <span class="s">guardrail-report.md</span>
+</code></pre></div></div>
+
+<h3 id="jenkins">Jenkins</h3>
+
+<p>A sample <code class="language-plaintext highlighter-rouge">Jenkinsfile</code> is included that runs the guardrail in a Docker container.</p>
+
+<h2 id="portfolio-tips">Portfolio Tips</h2>
+
+<ul>
+  <li>Run <code class="language-plaintext highlighter-rouge">pytest</code> and show coverage — it is configured with <code class="language-plaintext highlighter-rouge">pytest-cov</code>.</li>
+  <li>Show the mock-provider demo first so anyone can reproduce without an API key.</li>
+  <li>Explain the exit code behavior — it returns <code class="language-plaintext highlighter-rouge">1</code> on high-priority findings, demonstrating real CI/CD guardrail behavior.</li>
+  <li>Walk through the architecture in <code class="language-plaintext highlighter-rouge">docs/architecture.md</code>.</li>
+  <li>Show the GitHub Actions badge after the workflow runs successfully.</li>
+</ul>
+
+
+<footer class="site-footer">
+
+<span class="site-footer-owner"><a href="https://github.com/samueladegnan/ai-cicd-security-guardrail">ai-cicd-security-guardrail</a> is maintained by <a href="https://github.com/samueladegnan">Sam Degnan</a>.</span>
+
+<span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+</footer>
+</main>
+</body>
+</html>
