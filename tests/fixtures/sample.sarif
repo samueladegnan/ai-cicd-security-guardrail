@@ -1,0 +1,64 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2-1-0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Demo SAST",
+          "rules": [
+            {
+              "id": "CWE-121",
+              "name": "StackBasedBufferOverflow",
+              "shortDescription": {
+                "text": "Stack-based buffer overflow"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CWE-121",
+          "message": {
+            "text": "Possible stack-based buffer overflow due to unchecked strcpy."
+          },
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample_code/vulnerable.c"
+                },
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 5
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "unused-variable",
+          "message": {
+            "text": "Local variable 'result' is assigned but never used."
+          },
+          "level": "note",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample_code/false_positive.c"
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 9
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
