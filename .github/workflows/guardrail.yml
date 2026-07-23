@@ -14,9 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Example 1: Run with the built-in mock provider (no API key needed)
+      # Example 1: Run with the built-in mock provider (no API key needed).
+      # This sample contains a deliberate high-priority finding, so the
+      # guardrail exits with code 1. continue-on-error keeps the portfolio
+      # workflow green while still demonstrating the guardrail behavior.
       - name: Run guardrail (mock provider)
         uses: ./
+        continue-on-error: true
         with:
           report-path: ./tests/fixtures/sample.sarif
           format: sarif
