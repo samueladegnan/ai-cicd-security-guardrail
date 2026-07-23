@@ -2,9 +2,20 @@
 
 > Context-aware triage of static-analysis findings for C/C++ using a Large Language Model.
 
-[![CI](https://github.com/yourusername/ai-cicd-security-guardrail/actions/workflows/guardrail.yml/badge.svg)](https://github.com/yourusername/ai-cicd-security-guardrail/actions/workflows/guardrail.yml)
+[![CI](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml/badge.svg)](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+🌐 **View the portfolio site:** [samueladegnan.github.io/ai-cicd-security-guardrail](https://samueladegnan.github.io/ai-cicd-security-guardrail)
+
+## Portfolio Showcase
+
+This project was built as a **professional portfolio piece** to demonstrate secure software engineering, DevOps automation, LLM integration, and clean Python architecture. It is fully documented, tested, and packaged as a reusable GitHub Action and Docker container.
+
+- 📖 **Project site:** [docs/index.md](docs/index.md) (deployed via GitHub Pages)
+- 🎥 **Demo walkthrough:** [docs/demo.md](docs/demo.md)
+- 🏗️ **Architecture deep-dive:** [docs/architecture.md](docs/architecture.md)
+- 🧑‍💼 **Why this matters for hiring managers:** [docs/portfolio.md](docs/portfolio.md)
 
 ## Why?
 
@@ -23,6 +34,25 @@ Modern C/C++ codebases generate thousands of static-analysis warnings. Many are 
 - **CI/CD ready:** Docker container, reusable GitHub Action, and Jenkins pipeline example.
 - **Fast feedback:** In-memory caching and controlled concurrency.
 
+## Quick Demo
+
+```bash
+guardrail tests/fixtures/sample.sarif --provider mock --repo-root . --output-markdown report.md
+```
+
+Output:
+
+```text
+Guardrail Summary: {"total":2,"high_priority":1,"false_positive":1,"unclear":0}
+
+High-priority findings:
+  - CWE-121 at sample_code/vulnerable.c:14 (90% confidence)
+```
+
+The exit code is **1** because a high-priority security finding remains — exactly the behavior you want in CI/CD.
+
+See the full [Demo Walkthrough](docs/demo.md) for Docker, real LLM providers, and CI/CD examples.
+
 ## Quick Start
 
 ### Run with Docker (no API key required)
@@ -32,7 +62,7 @@ Modern C/C++ codebases generate thousands of static-analysis warnings. Many are 
 docker build -t ai-guardrail .
 
 # Run against the sample SARIF report
-docker run --rm -v "$(pwd):/workspace" ai-guardrail \
+docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-guardrail \
   tests/fixtures/sample.sarif \
   --repo-root /workspace \
   --output-json guardrail-report.json
@@ -123,7 +153,7 @@ For a detailed architecture overview, data-flow diagram, and extensibility guide
 ## Security & Privacy
 
 - The **mock** provider runs entirely locally and sends no data to external services.
-- For real LLM providers, code snippets are sent to the configured API endpoint. Use an private/enterprise LLM endpoint where required by policy.
+- For real LLM providers, code snippets are sent to the configured API endpoint. Use a private/enterprise LLM endpoint where required by policy.
 - No API keys are hard-coded; all secrets are loaded from environment variables or CI secret stores.
 
 ## Roadmap

@@ -19,10 +19,8 @@ RUN pip install --no-cache-dir .
 
 FROM python:3.12-slim AS runtime
 
-LABEL maintainer="Your Name <you@example.com>"
+LABEL maintainer="Sam Degnan <samueladegnan@gmail.com>"
 LABEL description="AI-Driven CI/CD Guardrail for secure C/C++ coding"
-
-WORKDIR /workspace
 
 # Copy only the virtual environment from the builder stage
 COPY --from=builder /opt/guardrail-venv /opt/guardrail-venv

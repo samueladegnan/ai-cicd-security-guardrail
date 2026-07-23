@@ -9,7 +9,6 @@ venv/
 .pytest_cache/
 htmlcov/
 .coverage
-tests/
 docs/
 sample_code/
 *.md

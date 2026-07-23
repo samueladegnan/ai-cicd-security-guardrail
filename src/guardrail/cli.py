@@ -55,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--format",
-        choices=["sarif", "sonarqube", "cppcheck"],
+        choices=["sarif", "sonarqube", "cppcheck", ""],
         help="Explicit report format. If omitted, the format is auto-detected.",
     )
     parser.add_argument(
