@@ -1,3 +1,8 @@
+---
+title: Architecture
+permalink: /architecture/
+---
+
 # AI-Driven CI/CD Security Guardrail — Architecture
 
 ## Goals

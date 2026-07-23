@@ -1,3 +1,7 @@
+---
+title: Home
+---
+
 # AI-Driven CI/CD Security Guardrail
 
 > Context-aware triage of static-analysis findings for C/C++ using a Large Language Model.

@@ -1,3 +1,8 @@
+---
+title: Portfolio Showcase
+permalink: /portfolio/
+---
+
 # Portfolio Showcase
 
 This page explains why the AI-Driven CI/CD Security Guardrail is a strong portfolio project and what engineering skills it demonstrates.
