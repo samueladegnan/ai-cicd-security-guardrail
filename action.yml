@@ -1,0 +1,65 @@
+name: AI-Driven CI/CD Security Guardrail
+description: Context-aware triage of static-analysis findings for C/C++ using an LLM.
+author: Sam Degnan
+branding:
+  icon: shield
+  color: red
+
+inputs:
+  report-path:
+    description: Path to the static analysis report (SARIF, SonarQube JSON, or cppcheck XML).
+    required: true
+  format:
+    description: Report format. If omitted, auto-detection is attempted.
+    required: false
+    default: ""
+  repo-root:
+    description: Root directory containing source files.
+    required: false
+    default: .
+  provider:
+    description: LLM provider (openai, anthropic, gemini, mock).
+    required: false
+    default: mock
+  llm-api-key:
+    description: API key for the selected LLM provider.
+    required: false
+  llm-model:
+    description: Model name to use with the selected LLM provider.
+    required: false
+  output-json:
+    description: Path where the JSON report should be written.
+    required: false
+  output-markdown:
+    description: Path where the Markdown report should be written.
+    required: false
+  max-concurrency:
+    description: Maximum concurrent LLM requests.
+    required: false
+    default: "3"
+  fail-on-unclear:
+    description: Treat UNCLEAR findings as failures.
+    required: false
+    default: "true"
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    GUARDRAIL_LLM_PROVIDER: ${{ inputs.provider }}
+    GUARDRAIL_LLM_API_KEY: ${{ inputs.llm-api-key }}
+    GUARDRAIL_LLM_MODEL: ${{ inputs.llm-model }}
+    GUARDRAIL_MAX_CONCURRENCY: ${{ inputs.max-concurrency }}
+    GUARDRAIL_FAIL_ON_UNCLEAR: ${{ inputs.fail-on-unclear }}
+    GUARDRAIL_OUTPUT_JSON: ${{ inputs.output-json }}
+    GUARDRAIL_OUTPUT_MARKDOWN: ${{ inputs.output-markdown }}
+  args:
+    - ${{ inputs.report-path }}
+    - --repo-root
+    - ${{ inputs.repo-root }}
+    - --provider
+    - ${{ inputs.provider }}
+    - --max-concurrency
+    - ${{ inputs.max-concurrency }}
+    - --format
+    - ${{ inputs.format }}

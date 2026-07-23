@@ -1,0 +1,93 @@
+{
+  "summary": {
+    "total": 2,
+    "high_priority": 1,
+    "false_positive": 1,
+    "unclear": 0
+  },
+  "results": [
+    {
+      "finding": {
+        "rule_id": "CWE-121",
+        "message": "Possible stack-based buffer overflow due to unchecked strcpy.",
+        "file_path": "sample_code/vulnerable.c",
+        "line": 14,
+        "column": 5,
+        "severity": "HIGH",
+        "code_snippet": "  10 void process_input(const char *input) {\n  11     char buffer[64];\n  12 \n  13     /* Vulnerable to buffer overflow (CWE-121) */\n  14     strcpy(buffer, input);\n  15 \n  16     printf(\"Processed: %s\\n\", buffer);\n  17 }\n  18 ",
+        "cwe": "CWE-121",
+        "tool": "sarif",
+        "raw": {
+          "ruleId": "CWE-121",
+          "message": {
+            "text": "Possible stack-based buffer overflow due to unchecked strcpy."
+          },
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample_code/vulnerable.c"
+                },
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 5
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "HIGH_PRIORITY",
+      "confidence": 0.9,
+      "reasoning": "Mock triage based on CWE/compliance mapping and keyword signals.",
+      "compliance_hits": [
+        {
+          "framework": "cert_c",
+          "rule_id": "STR31-C",
+          "title": "STR31-C. Guarantee that storage for strings has sufficient space",
+          "description": "Ensure that string operations do not overflow buffers."
+        }
+      ],
+      "remediation": "Fix or explicitly suppress the validated security issue."
+    },
+    {
+      "finding": {
+        "rule_id": "unused-variable",
+        "message": "Local variable 'result' is assigned but never used.",
+        "file_path": "sample_code/false_positive.c",
+        "line": 13,
+        "column": 9,
+        "severity": "LOW",
+        "code_snippet": "   9 #include <stdio.h>\n  10 \n  11 int calculate(int a, int b) {\n  12     /* Static analyzer might complain this variable is unused. */\n  13     int result = a + b;\n  14     return result;\n  15 }\n  16 \n  17 int main(void) {",
+        "cwe": null,
+        "tool": "sarif",
+        "raw": {
+          "ruleId": "unused-variable",
+          "message": {
+            "text": "Local variable 'result' is assigned but never used."
+          },
+          "level": "note",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample_code/false_positive.c"
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 9
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "FALSE_POSITIVE",
+      "confidence": 0.8,
+      "reasoning": "Mock triage based on CWE/compliance mapping and keyword signals.",
+      "compliance_hits": [],
+      "remediation": "No action required; the warning appears to be stylistic or benign."
+    }
+  ]
+}

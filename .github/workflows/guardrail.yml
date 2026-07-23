@@ -1,0 +1,42 @@
+name: AI Guardrail Demo
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  guardrail:
+    name: Context-Aware Security Triage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Example 1: Run with the built-in mock provider (no API key needed)
+      - name: Run guardrail (mock provider)
+        uses: ./
+        with:
+          report-path: ./tests/fixtures/sample.sarif
+          format: sarif
+          provider: mock
+          output-json: guardrail-report.json
+          output-markdown: guardrail-report.md
+
+      # Example 2: Upload triage report for review (real runs)
+      - name: Upload guardrail report
+        uses: actions/upload-artifact@v4
+        with:
+          name: guardrail-report
+          path: |
+            guardrail-report.json
+            guardrail-report.md
+
+      # Example 3: Real LLM triage (uncomment and set secret)
+      # - name: Run guardrail with Anthropic Claude
+      #   uses: ./
+      #   with:
+      #     report-path: ./tests/fixtures/sample.sarif
+      #     provider: anthropic
+      #     llm-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
