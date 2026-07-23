@@ -1,5 +1,5 @@
 ---
-title: Home
+title: AI Guardrail
 ---
 
 # AI-Driven CI/CD Security Guardrail

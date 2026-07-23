@@ -5,13 +5,13 @@
 
 /* Site navigation bar */
 .site-nav {
-  background: #ffffff;
-  border-bottom: 1px solid #e1e4e8;
-  padding: 0.75rem 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  background: transparent;
 }
 
 .site-nav__container {
