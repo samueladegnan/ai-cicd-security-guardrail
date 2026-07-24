@@ -31,9 +31,18 @@ This project was built as a **portfolio piece** to demonstrate:
 4. **Classify** — Send code context to an LLM (OpenAI, Anthropic, Gemini, or a deterministic mock).
 5. **Report** — Produce JSON and Markdown reports and a non-zero exit code for real risks.
 
+## Why It Matters
+
+- **Solves a real problem** — reduces false-positive fatigue in security pipelines.
+- **Production-shaped** — Dockerized, reusable GitHub Action, tested, documented.
+- **Smart AI use** — LLM classification stays separate from deterministic compliance mapping.
+- **Portfolio-friendly** — runs without an API key using the mock provider.
+
 ## Live Demo
 
-Run the guardrail with the built-in mock provider — no API key required.
+Try the guardrail instantly in your browser — no installation or API key required — on the [Interactive Live Demo](./app).
+
+You can also run the guardrail locally with the built-in mock provider:
 
 ```bash
 docker build -t ai-guardrail .
@@ -43,7 +52,7 @@ docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-guardrail \
   --output-markdown /workspace/report.md
 ```
 
-See the full [Demo Walkthrough](./demo) for local installation, CLI usage, CI/CD examples, and expected outputs.
+See the full [Demo](./demo) for local installation, CLI usage, CI/CD examples, and expected outputs.
 
 ## Key Features
 
@@ -61,7 +70,7 @@ For a detailed data-flow diagram, component breakdown, and extensibility guide, 
 
 - [Source Code](https://github.com/samueladegnan/ai-cicd-security-guardrail)
 - [README](https://github.com/samueladegnan/ai-cicd-security-guardrail#readme)
-- [Demo Walkthrough](./demo)
+- [Demo](./demo)
 - [Architecture Deep Dive](./architecture)
 
 ## About the Author

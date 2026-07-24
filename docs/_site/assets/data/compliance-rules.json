@@ -1,0 +1,193 @@
+{
+  "cert_c": {
+    "PRE00-C": {
+      "title": "PRE00-C. Avoid making assumptions about precedence and associativity",
+      "description": "Expressions should not rely on undefined operator precedence.",
+      "cwes": ["CWE-783"]
+    },
+    "EXP00-C": {
+      "title": "EXP00-C. Use parentheses for precedence",
+      "description": "Do not depend on C's precedence rules.",
+      "cwes": ["CWE-783"]
+    },
+    "STR30-C": {
+      "title": "STR30-C. Do not attempt to modify string literals",
+      "description": "String literals may be stored in read-only memory.",
+      "cwes": ["CWE-770"]
+    },
+    "STR31-C": {
+      "title": "STR31-C. Guarantee that storage for strings has sufficient space",
+      "description": "Ensure that string operations do not overflow buffers.",
+      "cwes": ["CWE-120", "CWE-121", "CWE-122"]
+    },
+    "STR32-C": {
+      "title": "STR32-C. Do not pass a non-null-terminated character sequence to a function that expects a string",
+      "description": "Passing unterminated sequences can lead to buffer over-reads.",
+      "cwes": ["CWE-126", "CWE-170"]
+    },
+    "STR38-C": {
+      "title": "STR38-C. Do not confuse functions that accept a wchar_t argument with those that accept a char argument",
+      "description": "Use the correct character width for string functions.",
+      "cwes": ["CWE-843"]
+    },
+    "ARR30-C": {
+      "title": "ARR30-C. Do not form or use out-of-bounds pointers or array subscripts",
+      "description": "Array accesses must remain within the bounds of the object.",
+      "cwes": ["CWE-119", "CWE-125", "CWE-787"]
+    },
+    "ARR32-C": {
+      "title": "ARR32-C. Ensure size arguments are appropriate for the array",
+      "description": "When passing sizes to memory or string functions, ensure they match the destination.",
+      "cwes": ["CWE-131", "CWE-806"]
+    },
+    "INT30-C": {
+      "title": "INT30-C. Ensure that unsigned integer operations do not wrap",
+      "description": "Unsigned integer wraparound can cause unexpected behavior.",
+      "cwes": ["CWE-190", "CWE-680"]
+    },
+    "INT32-C": {
+      "title": "INT32-C. Ensure that integer operations do not result in overflow or wraparound",
+      "description": "Integer overflow can lead to memory corruption or logic errors.",
+      "cwes": ["CWE-190", "CWE-680"]
+    },
+    "MEM30-C": {
+      "title": "MEM30-C. Do not access freed memory",
+      "description": "Use-after-free can lead to crashes or arbitrary code execution.",
+      "cwes": ["CWE-416"]
+    },
+    "MEM31-C": {
+      "title": "MEM31-C. Free dynamically allocated memory exactly once",
+      "description": "Double-free can corrupt heap metadata and enable exploitation.",
+      "cwes": ["CWE-415"]
+    },
+    "MEM34-C": {
+      "title": "MEM34-C. Only free memory allocated dynamically",
+      "description": "Freeing non-heap pointers is undefined behavior.",
+      "cwes": ["CWE-590"]
+    },
+    "FIO37-C": {
+      "title": "FIO37-C. Ensure that string arguments are null-terminated",
+      "description": "File and string I/O require null-terminated buffers.",
+      "cwes": ["CWE-170"]
+    },
+    "ERR34-C": {
+      "title": "ERR34-C. Detect errors when converting a string to an integer",
+      "description": "Check return values and errno after strtol/strtoul.",
+      "cwes": ["CWE-676", "CWE-681"]
+    },
+    "MSC37-C": {
+      "title": "MSC37-C. Ensure that control never reaches the end of a non-void function",
+      "description": "Non-void functions must return a value on every path.",
+      "cwes": ["CWE-758"]
+    }
+  },
+  "misra_c": {
+    "Dir-1.1": {
+      "title": "Dir-1.1 Any implementation-defined behaviour must be documented and understood",
+      "description": "Avoid reliance on undefined or implementation-defined language behaviour.",
+      "cwes": ["CWE-758"]
+    },
+    "Rule-1.3": {
+      "title": "Rule-1.3 There shall be no occurrence of undefined or critical unspecified behaviour",
+      "description": "Undefined behaviour must not occur.",
+      "cwes": ["CWE-758"]
+    },
+    "Rule-7.4": {
+      "title": "Rule-7.4 A string literal shall not be assigned to an object unless the object's type is 'pointer to const-qualified char'",
+      "description": "String literals are read-only.",
+      "cwes": ["CWE-770"]
+    },
+    "Rule-8.14": {
+      "title": "Rule-8.14 The const qualifier shall be used to document read-only objects",
+      "description": "Use const to declare read-only objects.",
+      "cwes": ["CWE-770"]
+    },
+    "Rule-14.4": {
+      "title": "Rule-14.4 The condition of an if-statement or iteration statement shall have essentially Boolean type",
+      "description": "Boolean expressions must be explicit.",
+      "cwes": ["CWE-840"]
+    },
+    "Rule-17.7": {
+      "title": "Rule-17.7 The value returned by a function having non-void return type shall be used",
+      "description": "Function return values must not be ignored.",
+      "cwes": ["CWE-252"]
+    },
+    "Rule-18.1": {
+      "title": "Rule-18.1 A pointer resulting from arithmetic on a pointer operand shall address an element of the same array or one past the last element",
+      "description": "Pointer arithmetic must stay within array bounds.",
+      "cwes": ["CWE-119", "CWE-125", "CWE-787"]
+    },
+    "Rule-18.2": {
+      "title": "Rule-18.2 Subtraction between pointers shall only address elements of the same array",
+      "description": "Pointer subtraction must be within the same array object.",
+      "cwes": ["CWE-119", "CWE-125"]
+    },
+    "Rule-18.3": {
+      "title": "Rule-18.3 The relational operators >, >=, < and <= shall not be applied to objects of pointer type except where they point into the same object",
+      "description": "Relational pointer comparisons require same-object pointers.",
+      "cwes": ["CWE-119", "CWE-125"]
+    },
+    "Rule-18.6": {
+      "title": "Rule-18.6 The address of an object with automatic storage shall not be copied to another object that persists after the first object has ceased to exist",
+      "description": "Avoid returning pointers to local variables.",
+      "cwes": ["CWE-562"]
+    },
+    "Rule-20.7": {
+      "title": "Rule-20.7 Expressions resulting from the expansion of macro parameters shall be enclosed in parentheses",
+      "description": "Macro arguments must be parenthesized to avoid precedence issues.",
+      "cwes": ["CWE-783"]
+    },
+    "Rule-21.1": {
+      "title": "Rule-21.1 #define and #undef shall not be used on a reserved identifier or reserved macro name",
+      "description": "Do not redefine reserved identifiers or macros.",
+      "cwes": ["CWE-758"]
+    },
+    "Rule-21.3": {
+      "title": "Rule-21.3 The memory allocation and deallocation functions of <stdlib.h> shall not be used",
+      "description": "Dynamic memory can lead to non-deterministic behaviour.",
+      "cwes": ["CWE-415", "CWE-416", "CWE-590"]
+    },
+    "Rule-21.4": {
+      "title": "Rule-21.4 The standard header file <setjmp.h> shall not be used",
+      "description": "setjmp/longjmp can break resource management.",
+      "cwes": ["CWE-676"]
+    },
+    "Rule-21.6": {
+      "title": "Rule-21.6 The Standard Library input/output functions shall not be used",
+      "description": "Avoid unsafe I/O functions.",
+      "cwes": ["CWE-676"]
+    }
+  },
+  "fips": {
+    "FIPS-CRYPTO-1": {
+      "title": "Approved cryptographic algorithms only",
+      "description": "Use only FIPS 140-3 approved algorithms (e.g., AES, SHA-2, ECDSA).",
+      "cwes": ["CWE-327"]
+    },
+    "FIPS-CRYPTO-2": {
+      "title": "Deterministic random bit generators (DRBG) must be used correctly",
+      "description": "Use a FIPS-approved DRBG and seed it with sufficient entropy.",
+      "cwes": ["CWE-338"]
+    },
+    "FIPS-CRYPTO-3": {
+      "title": "Key zeroization and protection",
+      "description": "Cryptographic keys must be zeroized when no longer needed.",
+      "cwes": ["CWE-226", "CWE-316"]
+    },
+    "FIPS-AUTH-1": {
+      "title": "Identity and authentication controls",
+      "description": "Authenticate operators before performing cryptographic operations.",
+      "cwes": ["CWE-287"]
+    },
+    "FIPS-INTEGRITY-1": {
+      "title": "Software/firmware integrity",
+      "description": "Maintain integrity of cryptographic module software and firmware.",
+      "cwes": ["CWE-354", "CWE-494"]
+    },
+    "FIPS-POWER-1": {
+      "title": "Mitigate environmental failure and power analysis",
+      "description": "Protect against side-channel and environmental failure attacks.",
+      "cwes": ["CWE-208"]
+    }
+  }
+}

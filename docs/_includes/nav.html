@@ -6,9 +6,9 @@
 
     <ul class="site-nav__links">
       <li><a {% if page.path == 'index.md' or page.url == '/' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/' | relative_url }}">Home</a></li>
+      <li><a {% if page.path == 'app.md' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/app/' | relative_url }}">Live Demo</a></li>
       <li><a {% if page.path == 'demo.md' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/demo/' | relative_url }}">Demo</a></li>
       <li><a {% if page.path == 'architecture.md' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/architecture/' | relative_url }}">Architecture</a></li>
-      <li><a {% if page.path == 'portfolio.md' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/portfolio/' | relative_url }}">Portfolio</a></li>
       <li>
         <a href="{{ site.repository_url | default: 'https://github.com/samueladegnan/ai-cicd-security-guardrail' }}" target="_blank" rel="noopener noreferrer">
           GitHub

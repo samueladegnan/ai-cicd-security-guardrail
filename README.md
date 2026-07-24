@@ -15,7 +15,7 @@ This project was built as a **professional portfolio piece** to demonstrate secu
 - 📖 **Project site:** [docs/index.md](docs/index.md) (deployed via GitHub Pages)
 - 🎥 **Demo walkthrough:** [docs/demo.md](docs/demo.md)
 - 🏗️ **Architecture deep-dive:** [docs/architecture.md](docs/architecture.md)
-- 🧑‍💼 **Why this matters for hiring managers:** [docs/portfolio.md](docs/portfolio.md)
+
 
 ## Why?
 

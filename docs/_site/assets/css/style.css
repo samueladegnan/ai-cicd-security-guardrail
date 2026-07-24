@@ -323,7 +323,7 @@ a:hover { text-decoration: underline; }
 .site-footer-credits { color: #819198; }
 
 /* Site navigation bar - lives inside the page-header */
-.site-nav { background: transparent; padding: 1rem 2rem; margin-bottom: 1.5rem; }
+.site-nav { background: transparent; padding: 1.5rem 2rem 0; margin-bottom: 0; }
 
 .site-nav__container { max-width: 64rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
 
@@ -343,8 +343,110 @@ a:hover { text-decoration: underline; }
 
 .site-nav__links a.site-nav__link--active:hover, .site-nav__links a.site-nav__link--active:focus { text-decoration: none; }
 
-@media (max-width: 600px) { .site-nav { padding: 1rem; }
+@media (max-width: 600px) { .site-nav { padding: 1.5rem 1rem 0; margin-bottom: 0; }
   .site-nav__container { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
   .site-nav__links { gap: 1rem; } }
 /* Slight spacing adjustment for the first heading on each page */
 .main-content h1:first-of-type { margin-top: 1.5rem; }
+
+/* --------------------------------------------------------------------------- Header spacing override to match the ZK fitness demo --------------------------------------------------------------------------- */
+.page-header { padding: 0 0 4rem; }
+
+@media (min-width: 64em) { .page-header { padding: 0 0 4.5rem; } }
+.page-header .project-name { margin-top: 2.5rem; margin-bottom: 0.25rem; }
+
+/* --------------------------------------------------------------------------- Live Demo app styles --------------------------------------------------------------------------- */
+.live-demo-page { margin-top: 2rem; }
+
+.live-demo-page .lead { font-size: 1.15rem; color: #475569; margin-bottom: 2rem; }
+
+.guardrail-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.04); padding: 1.5rem; margin-bottom: 1.5rem; }
+
+.guardrail-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+
+.control-group label, .input-label { display: block; font-weight: 600; margin-bottom: 0.35rem; color: #1e293b; }
+
+.control-group select, .guardrail-input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.375rem; font-size: 0.95rem; background: #ffffff; box-sizing: border-box; }
+
+.guardrail-input { min-height: 260px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.85rem; line-height: 1.45; resize: vertical; }
+
+.guardrail-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
+
+.btn-run, .btn-reset { display: inline-block; padding: 0.75rem 1.25rem; border-radius: 0.375rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.2s ease, transform 0.1s ease; }
+
+.btn-run { background-color: #10b981; color: #ffffff; }
+
+.btn-run:hover, .btn-run:focus { background-color: #059669; }
+
+.btn-reset { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+
+.btn-reset:hover, .btn-reset:focus { background-color: #e2e8f0; }
+
+.guardrail-status { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 0.375rem; font-size: 0.95rem; }
+
+.status-info { background-color: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+.status-error { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* Summary metrics */
+.guardrail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+
+.metric-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; text-align: center; }
+
+.metric-card .metric-value { display: block; font-size: 2rem; font-weight: 700; color: #0f172a; }
+
+.metric-card .metric-label { display: block; font-size: 0.85rem; color: #64748b; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.metric-high .metric-value { color: #dc2626; }
+
+.metric-fp .metric-value { color: #059669; }
+
+.metric-unclear .metric-value { color: #d97706; }
+
+.ci-verdict { padding: 0.75rem 1rem; border-radius: 0.375rem; font-weight: 600; text-align: center; }
+
+.ci-pass { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+
+.ci-fail { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* Results table */
+.table-hint { color: #64748b; font-size: 0.9rem; margin-top: -0.5rem; margin-bottom: 1rem; }
+
+.results-table-wrap { overflow-x: auto; }
+
+.guardrail-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+
+.guardrail-table th, .guardrail-table td { padding: 0.85rem 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+
+.guardrail-table th { background: #f8fafc; font-weight: 600; color: #334155; }
+
+.guardrail-table tr:hover td { background-color: #f8fafc; }
+
+.finding-loc code, .cwe-label { color: #334155; }
+
+.finding-loc small { color: #64748b; }
+
+.guardrail-badge { display: inline-block; padding: 0.25rem 0.55rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+
+.verdict-high { background-color: #fee2e2; color: #991b1b; }
+
+.verdict-fp { background-color: #d1fae5; color: #065f46; }
+
+.verdict-unclear { background-color: #fef3c7; color: #92400e; }
+
+.badge-control { background-color: #eff6ff; color: #1e40af; margin: 0.15rem 0.15rem 0 0; }
+
+.confidence-bar { width: 100%; height: 0.55rem; background: #e2e8f0; border-radius: 9999px; overflow: hidden; position: relative; }
+
+.confidence-bar::after { content: ""; position: absolute; top: 0; left: 0; height: 100%; width: var(--value, 0%); background: linear-gradient(90deg, #3b82f6, #2563eb); border-radius: 9999px; transition: width 0.4s ease; }
+
+.detail-row { background: #f8faffc; }
+
+.detail-content { padding: 1rem 0.5rem; }
+
+.detail-content p { margin: 0.5rem 0; }
+
+.detail-content pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.85rem; margin-top: 0.75rem; }
+
+@media (max-width: 600px) { .guardrail-card { padding: 1rem; }
+  .guardrail-controls { grid-template-columns: 1fr; } }

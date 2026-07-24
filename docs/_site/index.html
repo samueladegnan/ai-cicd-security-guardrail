@@ -9,14 +9,14 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping." />
 <meta property="og:description" content="A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping." />
-<link rel="canonical" href="http://0.0.0.0:4000/" />
-<meta property="og:url" content="http://0.0.0.0:4000/" />
+<link rel="canonical" href="http://0.0.0.0:4000/ai-cicd-security-guardrail/" />
+<meta property="og:url" content="http://0.0.0.0:4000/ai-cicd-security-guardrail/" />
 <meta property="og:site_name" content="AI-Driven CI/CD Security Guardrail" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="AI Guardrail" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","description":"A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping.","headline":"AI Guardrail","name":"AI-Driven CI/CD Security Guardrail","url":"http://0.0.0.0:4000/"}</script>
+{"@context":"https://schema.org","@type":"WebSite","description":"A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping.","headline":"AI Guardrail","name":"AI-Driven CI/CD Security Guardrail","url":"http://0.0.0.0:4000/ai-cicd-security-guardrail/"}</script>
 <!-- End Jekyll SEO tag -->
 
 <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -24,17 +24,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#157878">
 <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="/assets/css/style.css?v=">
-<!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
-
-<!-- Setup Google Analytics -->
-
-
-
-<!-- You can set your favicon here -->
-<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
-
-<!-- end custom head snippets -->
+<link rel="stylesheet" href="/ai-cicd-security-guardrail/assets/css/style.css?v=">
+<link rel="icon" type="image/svg+xml" href="/ai-cicd-security-guardrail/assets/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/ai-cicd-security-guardrail/assets/favicon.svg">
+<link rel="mask-icon" href="/ai-cicd-security-guardrail/assets/favicon.svg" color="#3b82f6">
+<meta name="theme-color" content="#0f172a">
 
 </head>
 <body>
@@ -42,15 +36,15 @@
 <header class="page-header" role="banner">
 <nav class="site-nav" aria-label="Primary">
   <div class="site-nav__container">
-    <a class="site-nav__brand" href="/">
+    <a class="site-nav__brand" href="/ai-cicd-security-guardrail/">
       AI Guardrail
     </a>
 
     <ul class="site-nav__links">
-      <li><a class="site-nav__link--active" aria-current="page" href="/">Home</a></li>
-      <li><a  href="/demo/">Demo</a></li>
-      <li><a  href="/architecture/">Architecture</a></li>
-      <li><a  href="/portfolio/">Portfolio</a></li>
+      <li><a class="site-nav__link--active" aria-current="page" href="/ai-cicd-security-guardrail/">Home</a></li>
+      <li><a  href="/ai-cicd-security-guardrail/app/">Live Demo</a></li>
+      <li><a  href="/ai-cicd-security-guardrail/demo/">Demo</a></li>
+      <li><a  href="/ai-cicd-security-guardrail/architecture/">Architecture</a></li>
       <li>
         <a href="https://github.com/samueladegnan/ai-cicd-security-guardrail" target="_blank" rel="noopener noreferrer">
           GitHub
@@ -62,13 +56,7 @@
 
 <h1 class="project-name">AI Guardrail</h1>
 <h2 class="project-tagline">A portfolio project that uses LLMs to triage static-analysis findings for C/C++ with compliance mapping.</h2>
-
-<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail" class="btn">View on GitHub</a>
-
-
-<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail/zipball/gh-pages" class="btn">Download .zip</a>
-<a href="https://github.com/samueladegnan/ai-cicd-security-guardrail/tarball/gh-pages" class="btn">Download .tar.gz</a>
-
+<a href="/ai-cicd-security-guardrail/app/" class="btn">Launch Live Demo</a>
 </header>
 <main id="content" class="main-content" role="main">
 <h1 id="ai-driven-cicd-security-guardrail">AI-Driven CI/CD Security Guardrail</h1>
@@ -96,7 +84,7 @@
 
 <h2 id="how-it-works">How It Works</h2>
 
-<p><img src="/assets/architecture.svg" alt="Architecture diagram showing static analysis report, parser, compliance mapper, LLM triage engine, code context, and report with CI exit code" /></p>
+<p><img src="/ai-cicd-security-guardrail/assets/architecture.svg" alt="Architecture diagram showing static analysis report, parser, compliance mapper, LLM triage engine, code context, and report with CI exit code" /></p>
 
 <ol>
   <li><strong>Ingest</strong> — Parse SARIF, SonarQube JSON, or cppcheck XML reports.</li>
@@ -106,9 +94,20 @@
   <li><strong>Report</strong> — Produce JSON and Markdown reports and a non-zero exit code for real risks.</li>
 </ol>
 
+<h2 id="why-it-matters">Why It Matters</h2>
+
+<ul>
+  <li><strong>Solves a real problem</strong> — reduces false-positive fatigue in security pipelines.</li>
+  <li><strong>Production-shaped</strong> — Dockerized, reusable GitHub Action, tested, documented.</li>
+  <li><strong>Smart AI use</strong> — LLM classification stays separate from deterministic compliance mapping.</li>
+  <li><strong>Portfolio-friendly</strong> — runs without an API key using the mock provider.</li>
+</ul>
+
 <h2 id="live-demo">Live Demo</h2>
 
-<p>Run the guardrail with the built-in mock provider — no API key required.</p>
+<p>Try the guardrail instantly in your browser — no installation or API key required — on the <a href="./app">Interactive Live Demo</a>.</p>
+
+<p>You can also run the guardrail locally with the built-in mock provider:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build <span class="nt">-t</span> ai-guardrail <span class="nb">.</span>
 docker run <span class="nt">--rm</span> <span class="nt">-v</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">pwd</span><span class="si">)</span><span class="s2">:/workspace"</span> <span class="nt">--workdir</span> /workspace ai-guardrail <span class="se">\</span>
@@ -117,7 +116,7 @@ docker run <span class="nt">--rm</span> <span class="nt">-v</span> <span class="
   <span class="nt">--output-markdown</span> /workspace/report.md
 </code></pre></div></div>
 
-<p>See the full <a href="./demo">Demo Walkthrough</a> for local installation, CLI usage, CI/CD examples, and expected outputs.</p>
+<p>See the full <a href="./demo">Demo</a> for local installation, CLI usage, CI/CD examples, and expected outputs.</p>
 
 <h2 id="key-features">Key Features</h2>
 
@@ -138,7 +137,7 @@ docker run <span class="nt">--rm</span> <span class="nt">-v</span> <span class="
 <ul>
   <li><a href="https://github.com/samueladegnan/ai-cicd-security-guardrail">Source Code</a></li>
   <li><a href="https://github.com/samueladegnan/ai-cicd-security-guardrail#readme">README</a></li>
-  <li><a href="./demo">Demo Walkthrough</a></li>
+  <li><a href="./demo">Demo</a></li>
   <li><a href="./architecture">Architecture Deep Dive</a></li>
 </ul>
 

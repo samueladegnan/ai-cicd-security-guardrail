@@ -1,9 +1,7 @@
 ---
-title: Demo Walkthrough
+title: Demo
 permalink: /demo/
 ---
-
-# Demo Walkthrough
 
 This page shows how to run the guardrail locally, with Docker, and inside CI/CD. All commands below use the built-in **mock** provider, so no API key is required.
 
