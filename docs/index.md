@@ -51,4 +51,4 @@ docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-cicd-security-gua
 
 ## About the author
 
-Built by [Sam Degnan](https://github.com/samueladegnan), and I put this together to share my work in DevOps, secure coding, compliance mapping, and AI-assisted software engineering.
+Built by [Sam Degnan](https://github.com/samueladegnan) as a portfolio project to share my work in DevOps, secure coding, compliance mapping, and AI-assisted software engineering.
