@@ -112,11 +112,15 @@ jobs:
 
       - name: Run guardrail from image
         run: |
-          docker run --rm -v "${PWD}:/workspace" --workdir /workspace ai-cicd-security-guardrail:latest \
-            tests/fixtures/sample.sarif \
-            --repo-root /workspace \
-            --provider mock \
-            --output-json /workspace/report.json
+          docker run --rm \
+            -v "${PWD}:/workspace" \
+            --workdir /workspace \
+            --user "$(id -u):$(id -g)" \
+            ai-cicd-security-guardrail:latest \
+              tests/fixtures/sample.sarif \
+              --repo-root /workspace \
+              --provider mock \
+              --output-json /workspace/report.json
 
       - name: Verify report was produced
         run: |
