@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results version="2">
+  <errors>
+    <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds." cwe="119">
+      <location file="sample_code/vulnerable.c" line="14" column="5"/>
+    </error>
+    <error id="uninitvar" severity="error" msg="Variable 'total' is not initialized." cwe="457">
+      <location file="sample_code/vulnerable.c" line="22" column="10"/>
+    </error>
+    <error id="doubleFree" severity="error" msg="Memory is freed more than once." cwe="415">
+      <location file="sample_code/vulnerable.c" line="41" column="5"/>
+    </error>
+    <error id="unusedVariable" severity="style" msg="Unused variable: result">
+      <location file="sample_code/false_positive.c" line="13" column="9"/>
+    </error>
+    <error id="missingDefaultCase" severity="style" msg="Switch statement does not have a default case.">
+      <location file="sample_code/vulnerable.c" line="35" column="5"/>
+    </error>
+  </errors>
+</results>

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2-1-0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Demo SAST",
+          "rules": [
+            { "id": "CWE-121", "name": "StackBasedBufferOverflow", "shortDescription": { "text": "Stack-based buffer overflow" } },
+            { "id": "unused-variable", "shortDescription": { "text": "Unused local variable" } },
+            { "id": "CWE-457", "shortDescription": { "text": "Use of uninitialized variable" } },
+            { "id": "missing-default-case", "shortDescription": { "text": "Missing default in switch" } },
+            { "id": "CWE-415", "shortDescription": { "text": "Double free" } }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CWE-121",
+          "message": { "text": "Possible stack-based buffer overflow due to unchecked strcpy." },
+          "level": "error",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "sample_code/vulnerable.c" }, "region": { "startLine": 14, "startColumn": 5 } } }]
+        },
+        {
+          "ruleId": "unused-variable",
+          "message": { "text": "Local variable 'result' is assigned but never used." },
+          "level": "note",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "sample_code/false_positive.c" }, "region": { "startLine": 13, "startColumn": 9 } } }]
+        },
+        {
+          "ruleId": "CWE-457",
+          "message": { "text": "Variable 'total' may be used before it is initialized." },
+          "level": "warning",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "sample_code/vulnerable.c" }, "region": { "startLine": 22, "startColumn": 10 } } }]
+        },
+        {
+          "ruleId": "missing-default-case",
+          "message": { "text": "Switch statement does not have a default case." },
+          "level": "note",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "sample_code/vulnerable.c" }, "region": { "startLine": 35, "startColumn": 5 } } }]
+        },
+        {
+          "ruleId": "CWE-415",
+          "message": { "text": "Memory is freed more than once." },
+          "level": "error",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "sample_code/vulnerable.c" }, "region": { "startLine": 41, "startColumn": 5 } } }]
+        }
+      ]
+    }
+  ]
+}

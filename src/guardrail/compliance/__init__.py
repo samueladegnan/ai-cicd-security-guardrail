@@ -2,67 +2,81 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
+from guardrail.compliance.base import (
+    CISAWSMapper,
+    ComplianceMapper,
+    ComplianceRegistry,
+    GenericCWEMapper,
+    OWASPMapper,
+    RulesetMapper,
+)
 from guardrail.compliance.cert_c import CERT_C_RULES
 from guardrail.compliance.fips import FIPS_RULES
 from guardrail.compliance.misra_c import MISRA_C_RULES
-from guardrail.models import ComplianceHit
+from guardrail.models import ComplianceHit, Finding, Language
 
-_ALL_RULESETS = {
-    "cert_c": CERT_C_RULES,
-    "misra_c": MISRA_C_RULES,
-    "fips": FIPS_RULES,
-}
+__all__ = [
+    "ComplianceRegistry",
+    "ComplianceMapper",
+    "RulesetMapper",
+    "GenericCWEMapper",
+    "OWASPMapper",
+    "CISAWSMapper",
+    "compliance_hits_for_cwe",
+    "list_frameworks",
+    "get_rule",
+]
 
 
-def list_frameworks() -> list[str]:
-    """Return supported compliance framework identifiers."""
-    return list(_ALL_RULESETS.keys())
+# Build the default registry once at import time.
+_REGISTRY = ComplianceRegistry()
+_REGISTRY.register(RulesetMapper("cert_c", CERT_C_RULES))
+_REGISTRY.register(RulesetMapper("misra_c", MISRA_C_RULES))
+_REGISTRY.register(RulesetMapper("fips", FIPS_RULES))
+_REGISTRY.register(GenericCWEMapper())
+_REGISTRY.register(OWASPMapper())
+_REGISTRY.register(CISAWSMapper())
 
 
-def get_rule(framework: str, rule_id: str) -> dict | None:
-    """Return a single rule definition from a framework."""
-    ruleset = _ALL_RULESETS.get(framework.lower())
-    if not ruleset:
+class ComplianceProxy:
+    """Thin proxy that exposes the legacy API while delegating to the registry."""
+
+    @staticmethod
+    def list_frameworks() -> list[str]:
+        return _REGISTRY.frameworks()
+
+    @staticmethod
+    def get_rule(framework: str, rule_id: str) -> dict | None:
+        mapper = _REGISTRY.get(framework)
+        if isinstance(mapper, RulesetMapper):
+            return mapper._rules.get(rule_id)
         return None
-    return ruleset.get(rule_id)
+
+    @staticmethod
+    def compliance_hits_for_cwe(
+        cwe: str | None,
+        frameworks: Iterable[str] | None = None,
+    ) -> list[ComplianceHit]:
+        # Build a dummy finding so we can use the registry API.
+        finding = Finding(
+            rule_id="",
+            message="",
+            file_path="",
+            cwe=cwe,
+        )
+        # The legacy API defaults to all registered frameworks when none are supplied.
+        if frameworks is None:
+            frameworks = _REGISTRY.frameworks()
+        return _REGISTRY.map_finding(finding, frameworks=frameworks, language=Language.UNKNOWN)
 
 
-def _normalize_cwe(cwe: str | None) -> str:
-    if not cwe:
-        return ""
-    cwe = cwe.upper().strip()
-    if cwe.startswith("CWE-"):
-        return cwe
-    if cwe.isdigit():
-        return f"CWE-{cwe}"
-    return cwe
+list_frameworks = ComplianceProxy.list_frameworks
+get_rule = ComplianceProxy.get_rule
+compliance_hits_for_cwe = ComplianceProxy.compliance_hits_for_cwe
 
 
-def compliance_hits_for_cwe(cwe: str | None, frameworks: Iterable[str] | None = None) -> list[ComplianceHit]:
-    """Return the compliance controls related to a given CWE.
-
-    This lightweight lookup avoids a giant hard-coded matrix by using the
-    CWE-to-framework mappings embedded in each ruleset.
-    """
-    if frameworks is None:
-        frameworks = list_frameworks()
-    normalized = _normalize_cwe(cwe)
-    hits: list[ComplianceHit] = []
-    for framework in frameworks:
-        ruleset = _ALL_RULESETS.get(framework.lower())
-        if not ruleset:
-            continue
-        for rule_id, rule in ruleset.items():
-            cwes = {c.upper() for c in rule.get("cwes", [])}
-            if normalized and normalized in cwes:
-                hits.append(
-                    ComplianceHit(
-                        framework=framework,
-                        rule_id=rule_id,
-                        title=rule.get("title", ""),
-                        description=rule.get("description", ""),
-                    )
-                )
-    return hits
+def default_registry() -> ComplianceRegistry:
+    """Return the built-in compliance registry with all rulesets."""
+    return _REGISTRY

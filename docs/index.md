@@ -2,47 +2,36 @@
 title: AI Guardrail
 ---
 
-# AI-Driven CI/CD Security Guardrail
-
-> Context-aware triage of static-analysis findings for C/C++ using a Large Language Model.
-
 [![CI](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml/badge.svg)](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## What It Is
+## What it is
 
-The **AI-Driven CI/CD Security Guardrail** is a Python CLI and reusable GitHub Action that ingests static-analysis reports for C/C++ code, enriches each finding with source context and compliance mappings, and uses an LLM to classify findings as **High-Priority Security Risk**, **False Positive**, or **Unclear**. It returns a CI-friendly exit code so that real risks can fail a build while false positives are filtered out.
+The **AI-Driven CI/CD Security Guardrail** is a Python CLI and reusable GitHub Action that reads static-analysis reports, enriches each finding with source context and compliance mappings, and uses an LLM to classify it as a **high-priority security risk**, a **false positive**, or **unclear**. It returns a CI-friendly exit code so real risks can fail a build while false positives are filtered out.
 
-This project was built as a **portfolio piece** to demonstrate:
+I built this as a portfolio project to show what secure software engineering, CI/CD automation, LLM integration, and clean Python architecture look like in practice.
 
-- Secure software engineering and compliance awareness.
-- DevOps / CI/CD automation with GitHub Actions and Docker.
-- LLM integration with provider-agnostic abstractions.
-- Clean Python architecture, testing, and packaging.
+## How it works
 
-## How It Works
+1. **Ingest:** Parse SARIF, SonarQube JSON, or cppcheck XML reports.
+2. **Enrich:** Load the source code around each finding.
+3. **Map:** Map CWEs to controls in **CERT C**, **MISRA C**, **FIPS 140-3**, **OWASP**, or **CIS AWS**.
+4. **Classify:** Send context to an LLM (OpenAI, Anthropic, Gemini, or a deterministic mock).
+5. **Report:** Produce JSON and Markdown reports and a non-zero exit code for real risks.
 
-![Architecture diagram showing static analysis report, parser, compliance mapper, LLM triage engine, code context, and report with CI exit code](assets/architecture.svg)
+## What makes it useful
 
-1. **Ingest** — Parse SARIF, SonarQube JSON, or cppcheck XML reports.
-2. **Enrich** — Load the relevant C/C++ source code around each finding.
-3. **Map** — Map CWEs to controls in **CERT C**, **MISRA C**, and **FIPS 140-3**.
-4. **Classify** — Send code context to an LLM (OpenAI, Anthropic, Gemini, or a deterministic mock).
-5. **Report** — Produce JSON and Markdown reports and a non-zero exit code for real risks.
+- **Reduces false-positive fatigue** in security pipelines.
+- **Works across languages:** C/C++, JavaScript, TypeScript, Ruby, Python, Terraform, and more.
+- **Runs without an API key** using the mock provider, perfect for demos and CI.
+- **Pluggable architecture:** swap parsers, context extractors, compliance mappers, and LLM providers.
 
-## Why It Matters
+## Live demo
 
-- **Solves a real problem** — reduces false-positive fatigue in security pipelines.
-- **Production-shaped** — Dockerized, reusable GitHub Action, tested, documented.
-- **Smart AI use** — LLM classification stays separate from deterministic compliance mapping.
-- **Portfolio-friendly** — runs without an API key using the mock provider.
+Try it in your browser on the [interactive live demo](./demo). No installation or API key is required.
 
-## Live Demo
-
-Try the guardrail instantly in your browser — no installation or API key required — on the [Interactive Live Demo](./app).
-
-You can also run the guardrail locally with the built-in mock provider:
+Or run it locally with Docker:
 
 ```bash
 docker build -t ai-guardrail .
@@ -52,27 +41,14 @@ docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-guardrail \
   --output-markdown /workspace/report.md
 ```
 
-See the full [Demo](./demo) for local installation, CLI usage, CI/CD examples, and expected outputs.
-
-## Key Features
+## Key features
 
 - **Multi-format parser support:** SARIF, SonarQube JSON, cppcheck XML.
-- **Compliance-aware context:** CERT C, MISRA C:2012, and FIPS 140-3 controls.
-- **Provider-agnostic LLM layer:** OpenAI, Anthropic, Gemini, and zero-cost mock provider.
+- **Compliance-aware context:** CERT C, MISRA C:2012, FIPS 140-3, OWASP Top 10, CWE, and CIS AWS.
+- **Provider-agnostic LLM layer:** OpenAI, Anthropic, Gemini, and a zero-cost mock provider.
 - **CI/CD ready:** Docker container, reusable GitHub Action, and Jenkins pipeline example.
 - **Fast feedback:** In-memory caching and controlled concurrency.
 
-## Architecture
+## About the author
 
-For a detailed data-flow diagram, component breakdown, and extensibility guide, see [Architecture](./architecture).
-
-## Project Links
-
-- [Source Code](https://github.com/samueladegnan/ai-cicd-security-guardrail)
-- [README](https://github.com/samueladegnan/ai-cicd-security-guardrail#readme)
-- [Demo](./demo)
-- [Architecture Deep Dive](./architecture)
-
-## About the Author
-
-Built by [Sam Degnan](https://github.com/samueladegnan) as a portfolio project to demonstrate DevOps, secure coding, compliance mapping, and AI-assisted software engineering.
+I am [Sam Degnan](https://github.com/samueladegnan), and I put this together to share my work in DevOps, secure coding, compliance mapping, and AI-assisted software engineering.

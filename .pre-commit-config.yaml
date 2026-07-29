@@ -1,0 +1,29 @@
+# Pre-commit hooks for the AI CI/CD Security Guardrail.
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+#
+# Note: mypy and pytest run in CI to keep local commits fast. Run them locally
+# with: python -m mypy src tests --ignore-missing-imports && pytest -q
+
+ci:
+  autofix_commit_msg: "style: auto-fix pre-commit issues"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+      - id: mixed-line-ending
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format

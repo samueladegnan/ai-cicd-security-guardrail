@@ -1,0 +1,171 @@
+{
+  "summary": {
+    "total": 5,
+    "high_priority": 3,
+    "false_positive": 1,
+    "unclear": 1
+  },
+  "results": [
+    {
+      "finding": {
+        "rule_id": "c:S3519",
+        "message": "Possible stack-based buffer overflow due to unchecked strcpy.",
+        "file_path": "sample_code/vulnerable.c",
+        "line": 14,
+        "column": 0,
+        "severity": "CRITICAL",
+        "code_snippet": "  10 void process_input(const char *input) {\n  11     char buffer[64];\n  12 \n  13     /* Vulnerable to buffer overflow (CWE-121) */\n  14     strcpy(buffer, input);\n  15 \n  16     printf(\"Processed: %s\\n\", buffer);\n  17 }\n  18 ",
+        "cwe": "CWE-121",
+        "tool": "sonarqube",
+        "language": "c",
+        "raw": {
+          "rule": "c:S3519",
+          "severity": "BLOCKER",
+          "component": "sample_code/vulnerable.c",
+          "line": 14,
+          "message": "Possible stack-based buffer overflow due to unchecked strcpy.",
+          "cwes": [
+            "CWE-121"
+          ]
+        }
+      },
+      "verdict": "HIGH_PRIORITY",
+      "confidence": 0.85,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=True, false-positive signals=False.",
+      "compliance_hits": [
+        {
+          "framework": "cert_c",
+          "rule_id": "STR31-C",
+          "title": "STR31-C. Guarantee that storage for strings has sufficient space",
+          "description": "Ensure that string operations do not overflow buffers."
+        }
+      ],
+      "remediation": "Apply the appropriate secure-coding fix."
+    },
+    {
+      "finding": {
+        "rule_id": "c:UnusedLocalVariable",
+        "message": "Local variable 'result' is assigned but never used.",
+        "file_path": "sample_code/false_positive.c",
+        "line": 13,
+        "column": 0,
+        "severity": "MEDIUM",
+        "code_snippet": "   9 #include <stdio.h>\n  10 \n  11 int calculate(int a, int b) {\n  12     /* Static analyzer might complain this variable is unused. */\n  13     int result = a + b;\n  14     return result;\n  15 }\n  16 \n  17 int main(void) {",
+        "cwe": null,
+        "tool": "sonarqube",
+        "language": "c",
+        "raw": {
+          "rule": "c:UnusedLocalVariable",
+          "severity": "MINOR",
+          "component": "sample_code/false_positive.c",
+          "line": 13,
+          "message": "Local variable 'result' is assigned but never used.",
+          "cwes": []
+        }
+      },
+      "verdict": "FALSE_POSITIVE",
+      "confidence": 0.8,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=True.",
+      "compliance_hits": [],
+      "remediation": "Apply the appropriate secure-coding fix."
+    },
+    {
+      "finding": {
+        "rule_id": "c:UninitializedVariable",
+        "message": "Variable 'total' may be used before it is initialized.",
+        "file_path": "sample_code/vulnerable.c",
+        "line": 22,
+        "column": 0,
+        "severity": "HIGH",
+        "code_snippet": "  18 \n  19 int main(void) {\n  20     char user_input[256];\n  21 \n  22     printf(\"Enter input: \");\n  23     fgets(user_input, sizeof(user_input), stdin);\n  24 \n  25     process_input(user_input);\n  26 ",
+        "cwe": "CWE-457",
+        "tool": "sonarqube",
+        "language": "c",
+        "raw": {
+          "rule": "c:UninitializedVariable",
+          "severity": "MAJOR",
+          "component": "sample_code/vulnerable.c",
+          "line": 22,
+          "message": "Variable 'total' may be used before it is initialized.",
+          "cwes": [
+            "CWE-457"
+          ]
+        }
+      },
+      "verdict": "HIGH_PRIORITY",
+      "confidence": 0.85,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=True, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Apply the appropriate secure-coding fix."
+    },
+    {
+      "finding": {
+        "rule_id": "c:MissingDefaultInSwitch",
+        "message": "Switch statement does not have a default case.",
+        "file_path": "sample_code/vulnerable.c",
+        "line": 35,
+        "column": 0,
+        "severity": "MEDIUM",
+        "code_snippet": "  24 \n  25     process_input(user_input);\n  26 \n  27     return 0;\n  28 }",
+        "cwe": null,
+        "tool": "sonarqube",
+        "language": "c",
+        "raw": {
+          "rule": "c:MissingDefaultInSwitch",
+          "severity": "MINOR",
+          "component": "sample_code/vulnerable.c",
+          "line": 35,
+          "message": "Switch statement does not have a default case.",
+          "cwes": []
+        }
+      },
+      "verdict": "UNCLEAR",
+      "confidence": 0.5,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Review the finding manually or re-run with a real LLM provider."
+    },
+    {
+      "finding": {
+        "rule_id": "cpp:S5025",
+        "message": "Memory is freed more than once.",
+        "file_path": "sample_code/vulnerable.c",
+        "line": 41,
+        "column": 0,
+        "severity": "CRITICAL",
+        "code_snippet": "  24 \n  25     process_input(user_input);\n  26 \n  27     return 0;\n  28 }",
+        "cwe": "CWE-415",
+        "tool": "sonarqube",
+        "language": "c",
+        "raw": {
+          "rule": "cpp:S5025",
+          "severity": "BLOCKER",
+          "component": "sample_code/vulnerable.c",
+          "line": 41,
+          "message": "Memory is freed more than once.",
+          "cwes": [
+            "CWE-415"
+          ]
+        }
+      },
+      "verdict": "HIGH_PRIORITY",
+      "confidence": 0.85,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=True, false-positive signals=False.",
+      "compliance_hits": [
+        {
+          "framework": "cert_c",
+          "rule_id": "MEM31-C",
+          "title": "MEM31-C. Free dynamically allocated memory exactly once",
+          "description": "Double-free can corrupt heap metadata and enable exploitation."
+        },
+        {
+          "framework": "misra_c",
+          "rule_id": "Rule-21.3",
+          "title": "Rule-21.3 The memory allocation and deallocation functions of <stdlib.h> shall not be used",
+          "description": "Dynamic memory can lead to non-deterministic behaviour."
+        }
+      ],
+      "remediation": "Apply the appropriate secure-coding fix."
+    }
+  ]
+}

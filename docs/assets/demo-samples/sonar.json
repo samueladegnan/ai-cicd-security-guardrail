@@ -1,0 +1,44 @@
+{
+  "issues": [
+    {
+      "rule": "c:S3519",
+      "severity": "BLOCKER",
+      "component": "sample_code/vulnerable.c",
+      "line": 14,
+      "message": "Possible stack-based buffer overflow due to unchecked strcpy.",
+      "cwes": ["CWE-121"]
+    },
+    {
+      "rule": "c:UnusedLocalVariable",
+      "severity": "MINOR",
+      "component": "sample_code/false_positive.c",
+      "line": 13,
+      "message": "Local variable 'result' is assigned but never used.",
+      "cwes": []
+    },
+    {
+      "rule": "c:UninitializedVariable",
+      "severity": "MAJOR",
+      "component": "sample_code/vulnerable.c",
+      "line": 22,
+      "message": "Variable 'total' may be used before it is initialized.",
+      "cwes": ["CWE-457"]
+    },
+    {
+      "rule": "c:MissingDefaultInSwitch",
+      "severity": "MINOR",
+      "component": "sample_code/vulnerable.c",
+      "line": 35,
+      "message": "Switch statement does not have a default case.",
+      "cwes": []
+    },
+    {
+      "rule": "cpp:S5025",
+      "severity": "BLOCKER",
+      "component": "sample_code/vulnerable.c",
+      "line": 41,
+      "message": "Memory is freed more than once.",
+      "cwes": ["CWE-415"]
+    }
+  ]
+}

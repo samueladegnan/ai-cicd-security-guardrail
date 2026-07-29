@@ -2,30 +2,57 @@
 
 from __future__ import annotations
 
-import hashlib
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional
 
 import requests
 
-from guardrail.code_fetcher import get_code_context_for_finding
-from guardrail.compliance import compliance_hits_for_cwe
+from guardrail.cache import TriageCache, make_cache, stable_key
+from guardrail.compliance import ComplianceRegistry, default_registry
+from guardrail.compliance.semantic import SemanticComplianceMapper, seed_default_controls
 from guardrail.config import Settings
-from guardrail.llm_client import LLMClient, get_client
+from guardrail.context import ContextRegistry, get_code_context_for_finding
+from guardrail.llm import LLMClient, get_client
+from guardrail.logger import get_logger
 from guardrail.models import ComplianceHit, Finding, Report, TriageResult, TriageVerdict
+from guardrail.policy import get_policy_engine
+
+logger = get_logger(__name__)
 
 
 class TriageEngine:
     """Orchestrate the classification of static-analysis findings."""
 
-    def __init__(self, settings: Settings, client: Optional[LLMClient] = None):
+    def __init__(
+        self,
+        settings: Settings,
+        client: LLMClient | None = None,
+        compliance_registry: ComplianceRegistry | None = None,
+        context_registry: ContextRegistry | None = None,
+        cache: TriageCache | None = None,
+    ):
         self.settings = settings
         self.client = client or get_client(settings)
-        self._cache: Dict[str, TriageResult] = {}
+        self.compliance_registry = compliance_registry or default_registry()
+        self.context_registry = context_registry or ContextRegistry.default(
+            strategy=settings.context_strategy
+        )
+        self.semantic_mapper: SemanticComplianceMapper | None = None
+        if settings.semantic_compliance_enabled:
+            self.semantic_mapper = SemanticComplianceMapper(
+                vector_store_path=settings.vector_store_path,
+                embedding_model=settings.embedding_model,
+            )
+            seed_default_controls(self.semantic_mapper)
+        self.cache = cache or make_cache(
+            backend=settings.cache_backend,
+            sqlite_path=settings.cache_sqlite_path,
+        )
+        self._mem_cache: dict[str, TriageResult] = {}
 
-    def run(self, findings: List[Finding], repo_root: str = ".") -> Report:
+    def run(self, findings: list[Finding], repo_root: str = ".") -> Report:
         """Run triage over all findings and return a report."""
+        logger.info("Starting triage for %d findings", len(findings))
         report = Report(results=[])
         for finding in findings:
             enriched = self._enrich_finding(finding, repo_root)
@@ -34,8 +61,9 @@ class TriageEngine:
         report.compute_summary()
         return report
 
-    def run_concurrent(self, findings: List[Finding], repo_root: str = ".") -> Report:
+    def run_concurrent(self, findings: list[Finding], repo_root: str = ".") -> Report:
         """Run triage concurrently with controlled parallelism."""
+        logger.info("Starting concurrent triage for %d findings", len(findings))
         if self.settings.max_concurrency <= 1:
             return self.run(findings, repo_root)
 
@@ -51,34 +79,42 @@ class TriageEngine:
         return report
 
     def _enrich_finding(self, finding: Finding, repo_root: str) -> Finding:
-        """Load code context into the finding."""
+        """Load source code context into the finding."""
         snippet = get_code_context_for_finding(
             finding,
             before=self.settings.context_lines_before,
             after=self.settings.context_lines_after,
             repo_root=repo_root,
+            registry=self.context_registry,
         )
-        # Merge in the snippet if not already present.
         if not finding.code_snippet:
-            return finding.model_copy(update={"code_snippet": snippet}, deep=True)
+            finding = finding.model_copy(update={"code_snippet": snippet}, deep=True)
         return finding
 
-    def _cache_key(self, finding: Finding) -> str:
-        """Stable hash for the finding and its code context."""
-        payload = f"{finding.tool}:{finding.rule_id}:{finding.file_path}:{finding.line}:{finding.column}:{finding.code_snippet}"
-        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    def _cache_key(self, finding: Finding, hits: list[ComplianceHit]) -> str:
+        """Stable hash for the finding and its compliance context."""
+        return stable_key(finding, hits)
 
     def _triage_one(self, finding: Finding) -> TriageResult:
         """Map a single finding to compliance controls and classify it."""
-        key = self._cache_key(finding)
-        if self.settings.cache_enabled and key in self._cache:
-            return self._cache[key]
+        hits = self.compliance_registry.map_finding(
+            finding,
+            frameworks=self.settings.frameworks,
+            language=finding.language,
+        )
+        if not hits and self.semantic_mapper is not None:
+            hits = self.semantic_mapper.map_finding(finding)
+        key = self._cache_key(finding, hits)
 
-        hits = compliance_hits_for_cwe(finding.cwe, frameworks=self.settings.frameworks)
+        if self.settings.cache_enabled:
+            cached = self.cache.get(key)
+            if cached is not None:
+                return cached
+
         result = self._classify(finding, hits)
 
         if self.settings.cache_enabled:
-            self._cache[key] = result
+            self.cache.set(key, result)
         return result
 
     @staticmethod
@@ -89,7 +125,10 @@ class TriageEngine:
         # Connection/timeout errors may be retried.
         return isinstance(exc, (requests.ConnectionError, requests.Timeout))
 
-    def _classify(self, finding: Finding, hits: List[ComplianceHit]) -> TriageResult:
+    def _classify(self, finding: Finding, hits: list[ComplianceHit]) -> TriageResult:
+        logger.debug(
+            "Classifying finding %s at %s:%s", finding.rule_id, finding.file_path, finding.line
+        )
         for attempt in range(self.settings.retries + 1):
             try:
                 return self.client.triage_finding(finding, hits)
@@ -104,13 +143,27 @@ class TriageEngine:
                         remediation="",
                     )
                 # Exponential backoff before retrying.
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
+        return TriageResult(
+            finding=finding,
+            verdict=TriageVerdict.UNCLEAR,
+            confidence=0.0,
+            reasoning="LLM classification exhausted all retries without a definitive result.",
+            compliance_hits=hits,
+            remediation="",
+        )
 
 
 def should_fail(report: Report, fail_on_unclear: bool = True) -> bool:
     """Return True if the report should cause a non-zero CI exit code."""
-    if report.summary.high_priority > 0:
-        return True
-    if fail_on_unclear and report.summary.unclear > 0:
-        return True
-    return False
+    return report.summary.high_priority > 0 or (fail_on_unclear and report.summary.unclear > 0)
+
+
+def evaluate_policy(report: Report, settings: Settings) -> bool:
+    """Evaluate the report against the configured policy engine.
+
+    Returns True if the pipeline should fail.
+    """
+    engine = get_policy_engine(settings)
+    decision = engine.evaluate(report, settings)
+    return not decision.get("allow", True)

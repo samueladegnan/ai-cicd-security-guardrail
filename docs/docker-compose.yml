@@ -1,0 +1,18 @@
+# Serve the Jekyll portfolio docs locally with Docker (Windows-friendly)
+#
+# Usage (from the docs/ directory):
+#   docker compose up --build
+#
+# Then open http://localhost:4000/ai-cicd-security-guardrail/
+
+services:
+  jekyll:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/srv/jekyll
+    environment:
+      - JEKYLL_ENV=development

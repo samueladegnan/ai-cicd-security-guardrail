@@ -1,0 +1,8 @@
+# Build artifacts and caches that should not be sent to the Docker daemon
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+.bundle
+vendor
+*.log

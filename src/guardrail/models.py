@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -22,6 +22,29 @@ class TriageVerdict(str, Enum):
     UNCLEAR = "UNCLEAR"
 
 
+class Language(str, Enum):
+    """Known languages for source-context extraction and compliance mapping."""
+
+    C = "c"
+    CPP = "cpp"
+    CSHARP = "csharp"
+    GO = "go"
+    JAVA = "java"
+    JAVASCRIPT = "javascript"
+    KOTLIN = "kotlin"
+    PYTHON = "python"
+    RUBY = "ruby"
+    RUST = "rust"
+    SWIFT = "swift"
+    TERRAFORM = "terraform"
+    TYPESCRIPT = "typescript"
+    UNKNOWN = "unknown"
+
+    # Convenience aliases used in parsing / CLI.
+    C_Family = "c_family"
+    GENERIC = "generic"
+
+
 class Finding(BaseModel):
     """A single static analysis warning."""
 
@@ -32,9 +55,10 @@ class Finding(BaseModel):
     column: int = Field(default=0, description="Column number in the source file.")
     severity: Severity = Field(default=Severity.MEDIUM)
     code_snippet: str = Field(default="", description="Lines of code around the warning.")
-    cwe: Optional[str] = Field(default=None, description="CWE identifier if available.")
+    cwe: str | None = Field(default=None, description="CWE identifier if available.")
     tool: str = Field(default="unknown", description="Source static analysis tool.")
-    raw: Dict[str, Any] = Field(default_factory=dict, description="Raw finding payload.")
+    language: Language = Field(default=Language.UNKNOWN, description="Source language.")
+    raw: dict[str, Any] = Field(default_factory=dict, description="Raw finding payload.")
 
     model_config = ConfigDict(frozen=True)
 
@@ -55,7 +79,7 @@ class TriageResult(BaseModel):
     verdict: TriageVerdict
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     reasoning: str = Field(default="")
-    compliance_hits: List[ComplianceHit] = Field(default_factory=list)
+    compliance_hits: list[ComplianceHit] = Field(default_factory=list)
     remediation: str = Field(default="")
 
 
@@ -70,7 +94,7 @@ class Report(BaseModel):
     """Final triage report."""
 
     summary: Summary = Field(default_factory=Summary)
-    results: List[TriageResult] = Field(default_factory=list)
+    results: list[TriageResult] = Field(default_factory=list)
 
     def compute_summary(self) -> None:
         summary = Summary(total=len(self.results))

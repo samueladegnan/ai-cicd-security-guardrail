@@ -1,19 +1,30 @@
 <nav class="site-nav" aria-label="Primary">
-  <div class="site-nav__container">
-    <a class="site-nav__brand" href="{{ '/' | relative_url }}">
-      AI Guardrail
-    </a>
-
-    <ul class="site-nav__links">
-      <li><a {% if page.path == 'index.md' or page.url == '/' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/' | relative_url }}">Home</a></li>
-      <li><a {% if page.path == 'app.md' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/app/' | relative_url }}">Live Demo</a></li>
-      <li><a {% if page.path == 'demo.md' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/demo/' | relative_url }}">Demo</a></li>
-      <li><a {% if page.path == 'architecture.md' %}class="site-nav__link--active" aria-current="page"{% endif %} href="{{ '/architecture/' | relative_url }}">Architecture</a></li>
-      <li>
-        <a href="{{ site.repository_url | default: 'https://github.com/samueladegnan/ai-cicd-security-guardrail' }}" target="_blank" rel="noopener noreferrer">
-          GitHub
-        </a>
-      </li>
-    </ul>
-  </div>
+  <a class="site-nav-brand" href="{{ '/' | relative_url }}">
+    AI Guardrail
+  </a>
+  <ul class="site-nav-links">
+    <li>
+      <a href="https://samueladegnan.github.io/" target="_blank" rel="noopener noreferrer">&larr; Back to Portfolio</a>
+    </li>
+    <li>
+      <a {% if page.path == 'index.md' or page.url == '/' %}class="active" aria-current="page"{% endif %} href="{{ '/' | relative_url }}">Overview</a>
+    </li>
+    <li>
+      <a {% if page.path == 'demo.md' %}class="active" aria-current="page"{% endif %} href="{{ '/demo/' | relative_url }}">Live Demo</a>
+    </li>
+    <li>
+      <a {% if page.path == 'architecture.md' %}class="active" aria-current="page"{% endif %} href="{{ '/architecture/' | relative_url }}">Architecture</a>
+    </li>
+    <li>
+      <a {% if page.path == 'security.md' %}class="active" aria-current="page"{% endif %} href="{{ '/security/' | relative_url }}">Security Report</a>
+    </li>
+    <li>
+      <a href="{{ site.github.repository_url | default: 'https://github.com/samueladegnan/ai-cicd-security-guardrail' }}" target="_blank" rel="noopener noreferrer">
+        GitHub
+      </a>
+    </li>
+    <li>
+      <a class="btn" href="{{ '/demo/' | relative_url }}">Launch Live Demo</a>
+    </li>
+  </ul>
 </nav>

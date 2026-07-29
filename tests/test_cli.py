@@ -11,7 +11,6 @@ import pytest
 
 from guardrail.cli import main
 
-
 FIXTURES = Path(__file__).with_suffix("").parent / "fixtures"
 
 
@@ -37,6 +36,27 @@ def test_cli_smoke(tmp_path):
     assert exit_code == 1  # High-priority finding detected in sample report
     data = json.loads(output_json.read_text(encoding="utf-8"))
     assert data["summary"]["total"] == 2
+
+
+def test_cli_language_flag(tmp_path):
+    output_json = tmp_path / "report.json"
+    exit_code = main(
+        [
+            str(FIXTURES / "sample.sarif"),
+            "--provider",
+            "mock",
+            "--repo-root",
+            ".",
+            "--language",
+            "c",
+            "--output-json",
+            str(output_json),
+        ]
+    )
+    assert exit_code == 1
+    data = json.loads(output_json.read_text(encoding="utf-8"))
+    assert data["summary"]["total"] == 2
+    assert all(r["finding"]["language"] == "c" for r in data["results"])
 
 
 def test_cli_entrypoint():

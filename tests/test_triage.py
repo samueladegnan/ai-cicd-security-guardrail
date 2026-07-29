@@ -5,13 +5,13 @@ from __future__ import annotations
 from guardrail.code_fetcher import get_code_context_for_finding
 from guardrail.compliance import compliance_hits_for_cwe, get_rule, list_frameworks
 from guardrail.config import Settings
-from guardrail.models import Finding, Severity, TriageVerdict
+from guardrail.models import Finding, Severity
 from guardrail.parsers import parse_report
 from guardrail.triage import TriageEngine
 
 
 def test_list_frameworks():
-    assert set(list_frameworks()) == {"cert_c", "misra_c", "fips"}
+    assert {"cert_c", "misra_c", "fips"}.issubset(set(list_frameworks()))
 
 
 def test_get_rule():
@@ -46,11 +46,12 @@ def test_mock_triage_engine():
     findings = parse_report("tests/fixtures/sample.sarif")
     # Enrich with realistic snippets so the mock can distinguish the cases.
     snippets = [
-        "   13     strcpy(buffer, input);\n   14     printf(\"Processed: %s\\n\", buffer);",
+        '   13     strcpy(buffer, input);\n   14     printf("Processed: %s\\n", buffer);',
         "   12     int result = a + b;\n   13     return result;\n   14 }\n",
     ]
     findings = [
-        f.model_copy(update={"code_snippet": snippet}) for f, snippet in zip(findings, snippets)
+        f.model_copy(update={"code_snippet": snippet})
+        for f, snippet in zip(findings, snippets, strict=True)
     ]
     report = engine.run_concurrent(findings)
     assert report.summary.total == 2

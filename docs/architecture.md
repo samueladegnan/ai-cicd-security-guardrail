@@ -3,90 +3,56 @@ title: Architecture
 permalink: /architecture/
 ---
 
-# AI-Driven CI/CD Security Guardrail — Architecture
+# AI Guardrail: Architecture
 
 ## Goals
 
-- Reduce false-positive fatigue from static-analysis tools in C/C++ pipelines.
-- Map every finding to one or more compliance controls (CERT C, MISRA C, FIPS 140-3).
-- Use an LLM to classify findings as **High-Priority Security Risk**, **False Positive**, or **Unclear**.
+- Reduce false-positive fatigue from static-analysis tools in CI/CD.
+- Map every finding to one or more compliance controls.
+- Use an LLM to classify findings as a **high-priority security risk**, a **false positive**, or **unclear**.
 - Provide a reusable Docker container and native CI/CD integrations for GitHub Actions and Jenkins.
+- Stay extensible: new languages, parsers, and compliance frameworks are simple to add.
 
-## High-Level Data Flow
+## High-level data flow
 
-```
-                    ┌───────────────────┐
-                    │    SAST Report    │
-                    │ (SARIF/Sonar/XML) │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │      Parser       │
-                    │    (findings)     │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │   Finding Model   │
-                    │  (rule/loc/CWE)   │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │   Triage Engine   │
-                    │  (orchestrator)   │
-                    └───────────────────┘
-                              │
-              ────────┬───────┬───────┬───────
-                      │       │       │
-                      ▼       ▼       ▼
-        ┌───────────┐   ┌───────────┐   ┌───────────┐
-        │ Code      │   │Compliance │   │   LLM     │
-        │ Fetcher   │   │ Mapper    │   │  Client   │
-        │(snippets) │   │(CERT/etc) │   │(classify) │
-        └───────────┘   └───────────┘   └───────────┘
-                              │
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │   Report + Exit   │
-                    │  (JSON/MD/exit)   │
-                    └───────────────────┘
-```
+![AI Guardrail data flow](../assets/architecture.svg)
 
-1. **Ingest** — Parse SARIF, SonarQube JSON, or cppcheck XML into a list of normalized `Finding` objects.
-2. **Enrich** — For each finding, the Triage Engine fetches nearby source code and looks up compliance controls.
-3. **Classify** — The LLM Client scores the enriched finding as `HIGH_PRIORITY`, `FALSE_POSITIVE`, or `UNCLEAR`.
-4. **Report** — The CLI aggregates results, writes JSON/Markdown reports, and returns a CI-friendly exit code.
+1. **Ingest:** Parse SARIF, SonarQube JSON, or cppcheck XML into normalized `Finding` objects.
+2. **Enrich:** For each finding, the triage engine fetches source context (line-window or Tree-sitter AST) and compliance controls (hardcoded rules or RAG embeddings).
+3. **Classify:** The LLM client scores the enriched finding, with provider fallback and circuit-breaker protection.
+4. **Report:** The CLI aggregates results, writes JSON/Markdown/SARIF, and returns a CI-friendly exit code or posts inline PR comments.
+5. **Govern:** An optional OPA/Rego policy decides whether the pipeline is allowed to pass.
 
-## Component Responsibilities
+## Component responsibilities
 
 | Component | Responsibility |
-|-----------|--------------|
-| `guardrail/parsers/` | Convert SARIF, SonarQube JSON, and cppcheck XML into a normalized `Finding` model. |
-| `guardrail/compliance/` | Map CWEs to controls in CERT C, MISRA C, and FIPS. |
-| `guardrail/llm_client.py` | Abstract provider-specific API calls. Supports OpenAI, Anthropic, Gemini, and a deterministic mock. |
-| `guardrail/triage.py` | Orchestrate code-context enrichment, compliance mapping, LLM classification, and caching. |
+|-----------|----------------|
+| `guardrail/parsers/` | Convert SARIF, SonarQube JSON, and cppcheck XML into `Finding` models. Each parser is a class that declares its tool name and supported languages. |
+| `guardrail/context.py` | Pluggable source-context extraction. A registry resolves the right `ContextExtractor` from language or file extension. The default strategy is a safe line window; an optional Tree-sitter extractor returns enclosing functions or classes. |
+| `guardrail/compliance/` | Pluggable compliance mapping. A registry of `ComplianceMapper` implementations covers CERT C, MISRA C:2012, FIPS, OWASP Top 10, CWE, and CIS AWS. Optional semantic mapping uses vector embeddings for unmapped rules. |
+| `guardrail/llm_client.py` | Provider-agnostic LLM client. Supports OpenAI, Anthropic, Gemini, and a deterministic mock, with multi-provider fallback and circuit breakers. |
+| `guardrail/cache.py` | In-memory and persistent SQLite caches keyed by a stable hash of the finding and its compliance context. |
+| `guardrail/policy.py` | Optional Open Policy Agent (OPA/Rego) evaluation of triage reports. |
+| `guardrail/reporters/` | GitHub PR review comments and GitHub Advanced Security SARIF output. |
+| `guardrail/triage.py` | Orchestrates enrichment, compliance mapping, LLM classification, caching, and policy evaluation. |
 | `guardrail/cli.py` | Command-line entry point and report formatting. |
 | `Dockerfile` / `action.yml` | Reusable container and GitHub Action definitions. |
 
-## Design Decisions
+## Language support
 
-1. **CWE as the pivot.** Tool-specific rule IDs are too numerous to map exhaustively. CWE is a stable intermediate layer.
-2. **Pluggable LLM client.** The abstraction layer keeps CI/CD configurations provider-agnostic.
-3. **Mock provider for demos.** Running a real LLM in a portfolio demo would require API keys and budget; the mock provider demonstrates the pipeline without cost.
-4. **Minimal dependencies.** `requests`, `pydantic`, and `defusedxml` cover parsing and typed models without pulling in heavy frameworks.
-5. **Exit-code semantics.** The tool returns `1` when high-priority (or unclear, by default) findings exist, making it a true CI/CD guardrail.
+The guardrail can support many languages. The `language` field on each `Finding` is inferred from the report metadata or file extension. You can also override it with the `--language` CLI flag or the `language` action input.
 
-## Security and Privacy Considerations
+Current language handling:
 
-- Source code snippets are sent to the configured LLM endpoint only when the user opts into a real provider.
-- The mock provider runs entirely locally and never leaves the container.
-- For real providers, follow your organization's data-handling policy; consider an enterprise LLM gateway or private endpoint.
+- **C/C++**: CERT C, MISRA C, FIPS controls.
+- **JavaScript / TypeScript**: OWASP Top 10 and CWE.
+- **Ruby**: OWASP Top 10 and CWE.
+- **Python**: OWASP Top 10 and CWE.
+- **Terraform / HCL**: CIS AWS and CWE.
+- **Other / unknown**: generic line-window context extraction and OWASP/CWE mapping.
 
-## Extending the Guardrail
+## Security and privacy
 
-- Add new parsers by implementing a function with signature `parse_report(path: str) -> List[Finding]` and registering it in `guardrail/parsers/__init__.py`.
-- Add new compliance frameworks by adding a rules dictionary and including it in `guardrail/compliance/__init__.py`.
-- Add new LLM providers by subclassing `LLMClient` and updating `get_client()`.
+- Source code snippets are sent to the configured LLM endpoint only when a real provider is selected.
+- The mock provider runs locally and never leaves the container.
+- For real providers, follow your organization's data-handling policy. Consider an enterprise LLM gateway or private endpoint.

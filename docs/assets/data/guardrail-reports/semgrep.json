@@ -1,0 +1,205 @@
+{
+  "summary": {
+    "total": 5,
+    "high_priority": 2,
+    "false_positive": 0,
+    "unclear": 3
+  },
+  "results": [
+    {
+      "finding": {
+        "rule_id": "jwt-none-alg",
+        "message": "Insecure JWT algorithm 'none' used.",
+        "file_path": "src/auth.js",
+        "line": 23,
+        "column": 10,
+        "severity": "HIGH",
+        "code_snippet": "   4   // Intentionally vulnerable: accepts JWT with 'none' algorithm.\n   5   return jwt.verify(token, undefined, { algorithms: ['none'] });\n   6 }\n   7 \n   8 module.exports = { authenticate };",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "javascript",
+        "raw": {
+          "ruleId": "jwt-none-alg",
+          "message": {
+            "text": "Insecure JWT algorithm 'none' used."
+          },
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/auth.js"
+                },
+                "region": {
+                  "startLine": 23,
+                  "startColumn": 10
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "HIGH_PRIORITY",
+      "confidence": 0.85,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=True, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Apply the appropriate secure-coding fix."
+    },
+    {
+      "finding": {
+        "rule_id": "no-eval",
+        "message": "Use of eval can lead to code injection.",
+        "file_path": "src/utils.js",
+        "line": 8,
+        "column": 15,
+        "severity": "HIGH",
+        "code_snippet": "   2   // Dangerous eval of user input.\n   3   return eval(input);\n   4 }\n   5 \n   6 module.exports = { runUserCode };",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "javascript",
+        "raw": {
+          "ruleId": "no-eval",
+          "message": {
+            "text": "Use of eval can lead to code injection."
+          },
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/utils.js"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 15
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "UNCLEAR",
+      "confidence": 0.5,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Review the finding manually or re-run with a real LLM provider."
+    },
+    {
+      "finding": {
+        "rule_id": "hardcoded-secret",
+        "message": "Hardcoded API key detected.",
+        "file_path": "src/config.js",
+        "line": 5,
+        "column": 20,
+        "severity": "HIGH",
+        "code_snippet": "   1 module.exports = {\n   2   // Hardcoded API key for demo purposes.\n   3   API_KEY: 'sk-live-1234567890abcdef',\n   4   API_URL: 'https://api.example.com',\n   5 };",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "javascript",
+        "raw": {
+          "ruleId": "hardcoded-secret",
+          "message": {
+            "text": "Hardcoded API key detected."
+          },
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/config.js"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 20
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "UNCLEAR",
+      "confidence": 0.5,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Review the finding manually or re-run with a real LLM provider."
+    },
+    {
+      "finding": {
+        "rule_id": "regex-dos",
+        "message": "User input reaches a regular expression with potential exponential time.",
+        "file_path": "src/validation.js",
+        "line": 31,
+        "column": 22,
+        "severity": "MEDIUM",
+        "code_snippet": "   3   const pattern = /^(a+)+$/;\n   4   return pattern.test(input);\n   5 }\n   6 \n   7 module.exports = { validateInput };",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "javascript",
+        "raw": {
+          "ruleId": "regex-dos",
+          "message": {
+            "text": "User input reaches a regular expression with potential exponential time."
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/validation.js"
+                },
+                "region": {
+                  "startLine": 31,
+                  "startColumn": 22
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "UNCLEAR",
+      "confidence": 0.5,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Review the finding manually or re-run with a real LLM provider."
+    },
+    {
+      "finding": {
+        "rule_id": "insecure-random",
+        "message": "Math.random() used for security-sensitive value.",
+        "file_path": "src/tokens.js",
+        "line": 14,
+        "column": 18,
+        "severity": "MEDIUM",
+        "code_snippet": "   2   // Predictable random value used for security-sensitive token.\n   3   return Math.random().toString(36).slice(2);\n   4 }\n   5 \n   6 module.exports = { generateToken };",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "javascript",
+        "raw": {
+          "ruleId": "insecure-random",
+          "message": {
+            "text": "Math.random() used for security-sensitive value."
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/tokens.js"
+                },
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 18
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "HIGH_PRIORITY",
+      "confidence": 0.85,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=True, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Apply the appropriate secure-coding fix."
+    }
+  ]
+}

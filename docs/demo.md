@@ -1,127 +1,212 @@
 ---
-title: Demo
+layout: default
+title: Live Demo
 permalink: /demo/
+wide: true
 ---
 
-This page shows how to run the guardrail locally, with Docker, and inside CI/CD. All commands below use the built-in **mock** provider, so no API key is required.
+<div class="live-demo-page">
+  <div class="demo-dashboard">
+    <section class="demo-panel demo-input-panel" aria-label="Input">
+      <div class="guardrail-card input-card">
+        <div class="input-intro">
+          <h2 class="input-title">🛡️ Live Demo</h2>
+          <p class="input-lead">Select a sample report, upload a SAST file, or paste JSON/XML. The demo runs entirely in your browser.</p>
+        </div>
 
-## 1. Run the Tests
+        <div class="guardrail-controls">
+          <div class="control-group">
+            <label for="guardrail-sample">Sample report</label>
+            <select id="guardrail-sample">
+              <option value="">-- Custom input --</option>
+              <option value="sarif" selected>SARIF sample (C/C++)</option>
+              <option value="brakeman">Brakeman SARIF (Ruby)</option>
+              <option value="semgrep">Semgrep SARIF (JavaScript)</option>
+              <option value="sonar">SonarQube JSON sample</option>
+              <option value="cppcheck">cppcheck XML sample</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="guardrail-format">Format</label>
+            <select id="guardrail-format">
+              <option value="auto">Auto-detect</option>
+              <option value="sarif">SARIF</option>
+              <option value="sonar">SonarQube JSON</option>
+              <option value="cppcheck">cppcheck XML</option>
+            </select>
+          </div>
+        </div>
 
-```bash
-pip install -e ".[dev]"
-pytest -q
-```
+        <div
+          id="drop-zone"
+          class="drop-zone"
+          role="button"
+          tabindex="0"
+          aria-label="Drag and drop a SAST report file here"
+        >
+          <div class="drop-zone-content">
+            <span class="drop-zone-icon" aria-hidden="true">⬆️</span>
+            <p class="drop-zone-text">
+              <strong>Drag &amp; drop</strong> a SARIF, SonarQube, or cppcheck file
+            </p>
+            <p class="drop-zone-hint">or click to browse — supports .sarif, .json, .xml</p>
+          </div>
+        </div>
 
-Expected output:
+        <label for="guardrail-input" class="input-label">Or paste report JSON/XML</label>
+        <textarea
+          id="guardrail-input"
+          class="guardrail-input"
+          spellcheck="false"
+          placeholder="Paste your SAST report here…"
+          aria-describedby="input-help"
+        ></textarea>
+        <p id="input-help" class="input-help">
+          Custom input is triaged client-side with the same deterministic classifier.
+        </p>
 
-```text
-14 passed in 0.83s
-```
+        <div class="guardrail-actions">
+          <button id="guardrail-run" class="btn-run">
+            <span class="btn-icon" aria-hidden="true">▶</span>
+            <span class="btn-text">Run Triage</span>
+          </button>
+          <button id="guardrail-reset" class="btn-reset">Reset</button>
+          <button id="guardrail-export" class="btn-export" disabled>Export JSON</button>
+        </div>
 
-## 2. Run the CLI with the Mock Provider
+        <div id="guardrail-status" class="guardrail-status" style="display: none;"></div>
 
-```bash
-guardrail tests/fixtures/sample.sarif \
-  --provider mock \
-  --repo-root . \
-  --output-json report.json \
-  --output-markdown report.md
-```
+        <div class="pipeline-card" aria-live="polite">
+          <div class="pipeline-title">Pipeline status</div>
+          <div class="pipeline-visual" aria-label="Pipeline stages">
+            <div class="pipeline-step" data-step="parse">
+              <span class="pipeline-dot"></span>
+              <span class="pipeline-label">Parse</span>
+            </div>
+            <div class="pipeline-connector" aria-hidden="true"></div>
+            <div class="pipeline-step" data-step="context">
+              <span class="pipeline-dot"></span>
+              <span class="pipeline-label">Context</span>
+            </div>
+            <div class="pipeline-connector" aria-hidden="true"></div>
+            <div class="pipeline-step" data-step="compliance">
+              <span class="pipeline-dot"></span>
+              <span class="pipeline-label">Compliance</span>
+            </div>
+            <div class="pipeline-connector" aria-hidden="true"></div>
+            <div class="pipeline-step" data-step="classify">
+              <span class="pipeline-dot"></span>
+              <span class="pipeline-label">Classify</span>
+            </div>
+            <div class="pipeline-connector" aria-hidden="true"></div>
+            <div class="pipeline-step" data-step="report">
+              <span class="pipeline-dot"></span>
+              <span class="pipeline-label">Report</span>
+            </div>
+          </div>
+          <p id="pipeline-status-text" class="pipeline-status-text">Ready — select a sample and click Run to triage the report.</p>
+        </div>
+      </div>
+    </section>
 
-Expected output:
+    <section class="demo-panel demo-results-panel" aria-label="Results" id="results-section">
+      <div id="guardrail-summary" class="summary-card" style="display: none;">
+        <div class="summary-header">
+          <div>
+            <h3 class="summary-title">Executive Summary</h3>
+            <p class="summary-subtitle">Breakdown of triaged findings</p>
+          </div>
+          <div id="ci-verdict" class="ci-verdict-badge"></div>
+        </div>
+        <div class="summary-metrics">
+          <div class="metric-card metric-total">
+            <span class="metric-value" id="metric-total">0</span>
+            <span class="metric-label">Total</span>
+          </div>
+          <div class="metric-card metric-high">
+            <span class="metric-value" id="metric-high">0</span>
+            <span class="metric-label">High Priority</span>
+          </div>
+          <div class="metric-card metric-fp">
+            <span class="metric-value" id="metric-fp">0</span>
+            <span class="metric-label">False Positive</span>
+          </div>
+          <div class="metric-card metric-unclear">
+            <span class="metric-value" id="metric-unclear">0</span>
+            <span class="metric-label">Unclear</span>
+          </div>
+        </div>
+        <p class="chart-title">Verdict distribution</p>
+        <div class="chart-wrap">
+          <canvas id="verdict-chart" aria-label="Verdict distribution chart" role="img"></canvas>
+        </div>
+      </div>
 
-```text
-Guardrail Summary: {"total":2,"high_priority":1,"false_positive":1,"unclear":0}
+      <div id="guardrail-empty-state" class="empty-state">
+        <span class="empty-icon" aria-hidden="true">🔍</span>
+        <h3>No report triaged yet</h3>
+        <p>Select a sample report and click <strong>Run</strong> to see the triage results.</p>
+      </div>
 
-High-priority findings:
-  - CWE-121 at sample_code/vulnerable.c:14 (90% confidence)
-```
+      <div id="guardrail-results" class="results-card" style="display: none;">
+        <div class="results-toolbar">
+          <div class="filter-group">
+            <label for="filter-verdict" class="sr-only">Filter by verdict</label>
+            <select id="filter-verdict">
+              <option value="all">All verdicts</option>
+              <option value="HIGH_PRIORITY">High Priority</option>
+              <option value="FALSE_POSITIVE">False Positive</option>
+              <option value="UNCLEAR">Unclear</option>
+            </select>
+          </div>
+          <div class="search-group">
+            <label for="search-findings" class="sr-only">Search findings</label>
+            <input
+              type="search"
+              id="search-findings"
+              placeholder="Search rule, CWE, file, or message…"
+            />
+          </div>
+          <div class="sort-group">
+            <label for="sort-findings" class="sr-only">Sort by</label>
+            <select id="sort-findings">
+              <option value="severity">Sort: Severity</option>
+              <option value="confidence">Sort: Confidence</option>
+              <option value="location">Sort: Location</option>
+            </select>
+          </div>
+        </div>
+        <p class="table-hint">Click any row to expand reasoning, remediation, and code context.</p>
+        <div class="results-table-wrap">
+          <table class="guardrail-table">
+            <thead>
+              <tr>
+                <th scope="col">Location</th>
+                <th scope="col">Rule / CWE</th>
+                <th scope="col">Compliance</th>
+                <th scope="col">Verdict</th>
+                <th scope="col">Confidence</th>
+              </tr>
+            </thead>
+            <tbody id="guardrail-results-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
 
-The exit code is **1** because a high-priority security finding remains — exactly what you want in CI/CD to fail a build.
-
-The command produces:
-
-- `report.json` — full structured report.
-- `report.md` — human-readable Markdown summary.
-
-Sample `report.md` excerpt:
-
-```markdown
-# AI-Driven CI/CD Security Guardrail Report
-## Summary
-- **Total findings triaged:** 2
-- **High-priority security risks:** 1
-- **False positives:** 1
-- **Unclear:** 0
-
-### CWE-121 @ `sample_code/vulnerable.c:14`
-- **Verdict:** HIGH_PRIORITY
-- **Confidence:** 0.90
-- **Compliance controls:**
-  - CERT_C STR31-C: Guarantee that storage for strings has sufficient space
-- **Remediation:** Fix or explicitly suppress the validated security issue.
-```
-
-## 3. Show the CLI Surface
-
-```bash
-guardrail --help
-```
-
-This is useful for screenshots or recordings.
-
-## 4. Run with Docker
-
-```bash
-docker build -t ai-guardrail .
-docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-guardrail \
-  tests/fixtures/sample.sarif \
-  --repo-root /workspace \
-  --output-markdown /workspace/report.md
-```
-
-The default provider in the image is `mock`, so it works out of the box.
-
-## 5. Run with a Real LLM Provider
-
-```bash
-export GUARDRAIL_LLM_PROVIDER=openai
-export GUARDRAIL_LLM_API_KEY=sk-...
-export GUARDRAIL_LLM_MODEL=gpt-4o-mini
-
-guardrail tests/fixtures/sample.sarif --repo-root .
-```
-
-You can also pass `--provider` directly:
-
-```bash
-guardrail tests/fixtures/sample.sarif --provider openai
-```
-
-## 6. CI/CD Demos
-
-### GitHub Actions
-
-The repo includes a reusable action. The workflow in `.github/workflows/guardrail.yml` runs on every push/PR and fails the build if high-priority findings remain.
-
-```yaml
-- name: AI Guardrail Triage
-  uses: ./
-  with:
-    report-path: ./scan-results.sarif
-    provider: anthropic
-    llm-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-    output-markdown: guardrail-report.md
-```
-
-### Jenkins
-
-A sample `Jenkinsfile` is included that runs the guardrail in a Docker container.
-
-## Portfolio Tips
-
-- Run `pytest` and show coverage — it is configured with `pytest-cov`.
-- Show the mock-provider demo first so anyone can reproduce without an API key.
-- Explain the exit code behavior — it returns `1` on high-priority findings, demonstrating real CI/CD guardrail behavior.
-- Walk through the architecture in `docs/architecture.md`.
-- Show the GitHub Actions badge after the workflow runs successfully.
+<script>
+  window.GUARDRAIL_DEMO = {
+    rulesUrl: "{{ '/assets/data/compliance-rules.json' | relative_url }}",
+    reportBaseUrl: "{{ '/assets/data/guardrail-reports/' | relative_url }}"
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+<script src="{{ '/assets/js/guardrail-demo.js' | relative_url }}"></script>

@@ -1,0 +1,52 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Brakeman",
+          "language": "ruby",
+          "rules": [
+            { "id": "SQL Injection", "shortDescription": { "text": "Possible SQL injection" } },
+            { "id": "Unused Method", "shortDescription": { "text": "Method never called" } },
+            { "id": "Weak Hash", "shortDescription": { "text": "Weak hash algorithm" } },
+            { "id": "Unscoped Query", "shortDescription": { "text": "Unscoped ActiveRecord query" } },
+            { "id": "Missing Authorization", "shortDescription": { "text": "No authorization check" } }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "SQL Injection",
+          "message": { "text": "Possible SQL injection in User.find_by_sql call." },
+          "level": "error",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "app/models/user.rb" }, "region": { "startLine": 42, "startColumn": 5 } } }]
+        },
+        {
+          "ruleId": "Unused Method",
+          "message": { "text": "Method admin? is never used." },
+          "level": "note",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "app/controllers/admin_controller.rb" }, "region": { "startLine": 12, "startColumn": 3 } } }]
+        },
+        {
+          "ruleId": "Weak Hash",
+          "message": { "text": "MD5 used for password digest." },
+          "level": "warning",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "app/models/user.rb" }, "region": { "startLine": 18, "startColumn": 10 } } }]
+        },
+        {
+          "ruleId": "Unscoped Query",
+          "message": { "text": "Unscoped ActiveRecord query may leak records across tenants." },
+          "level": "warning",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "app/controllers/posts_controller.rb" }, "region": { "startLine": 7, "startColumn": 15 } } }]
+        },
+        {
+          "ruleId": "Missing Authorization",
+          "message": { "text": "No authorization check before destroying a record." },
+          "level": "error",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "app/controllers/admin_controller.rb" }, "region": { "startLine": 28, "startColumn": 3 } } }]
+        }
+      ]
+    }
+  ]
+}

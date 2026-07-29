@@ -1,0 +1,52 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Semgrep",
+          "language": "javascript",
+          "rules": [
+            { "id": "jwt-none-alg", "shortDescription": { "text": "JWT none algorithm" } },
+            { "id": "no-eval", "shortDescription": { "text": "Dangerous use of eval" } },
+            { "id": "hardcoded-secret", "shortDescription": { "text": "Hardcoded credential" } },
+            { "id": "regex-dos", "shortDescription": { "text": "Regular expression denial of service" } },
+            { "id": "insecure-random", "shortDescription": { "text": "Predictable random value" } }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "jwt-none-alg",
+          "message": { "text": "Insecure JWT algorithm 'none' used." },
+          "level": "error",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/auth.js" }, "region": { "startLine": 23, "startColumn": 10 } } }]
+        },
+        {
+          "ruleId": "no-eval",
+          "message": { "text": "Use of eval can lead to code injection." },
+          "level": "error",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/utils.js" }, "region": { "startLine": 8, "startColumn": 15 } } }]
+        },
+        {
+          "ruleId": "hardcoded-secret",
+          "message": { "text": "Hardcoded API key detected." },
+          "level": "error",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/config.js" }, "region": { "startLine": 5, "startColumn": 20 } } }]
+        },
+        {
+          "ruleId": "regex-dos",
+          "message": { "text": "User input reaches a regular expression with potential exponential time." },
+          "level": "warning",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/validation.js" }, "region": { "startLine": 31, "startColumn": 22 } } }]
+        },
+        {
+          "ruleId": "insecure-random",
+          "message": { "text": "Math.random() used for security-sensitive value." },
+          "level": "warning",
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/tokens.js" }, "region": { "startLine": 14, "startColumn": 18 } } }]
+        }
+      ]
+    }
+  ]
+}

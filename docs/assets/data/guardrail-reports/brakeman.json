@@ -1,0 +1,205 @@
+{
+  "summary": {
+    "total": 5,
+    "high_priority": 1,
+    "false_positive": 2,
+    "unclear": 2
+  },
+  "results": [
+    {
+      "finding": {
+        "rule_id": "SQL Injection",
+        "message": "Possible SQL injection in User.find_by_sql call.",
+        "file_path": "app/models/user.rb",
+        "line": 42,
+        "column": 5,
+        "severity": "HIGH",
+        "code_snippet": "  15   # A method that is never called. Brakeman reports it as unused.\n  16   def admin?\n  17     role == \"admin\"\n  18   end\n  19 end",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "ruby",
+        "raw": {
+          "ruleId": "SQL Injection",
+          "message": {
+            "text": "Possible SQL injection in User.find_by_sql call."
+          },
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/models/user.rb"
+                },
+                "region": {
+                  "startLine": 42,
+                  "startColumn": 5
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "HIGH_PRIORITY",
+      "confidence": 0.85,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=True, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Apply the appropriate secure-coding fix."
+    },
+    {
+      "finding": {
+        "rule_id": "Unused Method",
+        "message": "Method admin? is never used.",
+        "file_path": "app/controllers/admin_controller.rb",
+        "line": 12,
+        "column": 3,
+        "severity": "LOW",
+        "code_snippet": "   8   # This method is intentionally unused for the demo report.\n   9   def admin?\n  10     current_user&.role == \"admin\"\n  11   end\n  12 \n  13   # No authorization check before destroying a record.\n  14   def destroy\n  15     user = User.find(params[:id])\n  16     user.destroy",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "ruby",
+        "raw": {
+          "ruleId": "Unused Method",
+          "message": {
+            "text": "Method admin? is never used."
+          },
+          "level": "note",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/controllers/admin_controller.rb"
+                },
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 3
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "FALSE_POSITIVE",
+      "confidence": 0.8,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=True.",
+      "compliance_hits": [],
+      "remediation": "Apply the appropriate secure-coding fix."
+    },
+    {
+      "finding": {
+        "rule_id": "Weak Hash",
+        "message": "MD5 used for password digest.",
+        "file_path": "app/models/user.rb",
+        "line": 18,
+        "column": 10,
+        "severity": "MEDIUM",
+        "code_snippet": "  14 \n  15   # A method that is never called. Brakeman reports it as unused.\n  16   def admin?\n  17     role == \"admin\"\n  18   end\n  19 end",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "ruby",
+        "raw": {
+          "ruleId": "Weak Hash",
+          "message": {
+            "text": "MD5 used for password digest."
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/models/user.rb"
+                },
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 10
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "FALSE_POSITIVE",
+      "confidence": 0.8,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=True.",
+      "compliance_hits": [],
+      "remediation": "Apply the appropriate secure-coding fix."
+    },
+    {
+      "finding": {
+        "rule_id": "Unscoped Query",
+        "message": "Unscoped ActiveRecord query may leak records across tenants.",
+        "file_path": "app/controllers/posts_controller.rb",
+        "line": 7,
+        "column": 15,
+        "severity": "MEDIUM",
+        "code_snippet": "   3 class PostsController < ApplicationController\n   4   def index\n   5     # Unscoped query may leak records across tenants.\n   6     @posts = Post.all\n   7   end\n   8 \n   9   def show\n  10     @post = Post.find(params[:id])\n  11   end",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "ruby",
+        "raw": {
+          "ruleId": "Unscoped Query",
+          "message": {
+            "text": "Unscoped ActiveRecord query may leak records across tenants."
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/controllers/posts_controller.rb"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 15
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "UNCLEAR",
+      "confidence": 0.5,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Review the finding manually or re-run with a real LLM provider."
+    },
+    {
+      "finding": {
+        "rule_id": "Missing Authorization",
+        "message": "No authorization check before destroying a record.",
+        "file_path": "app/controllers/admin_controller.rb",
+        "line": 28,
+        "column": 3,
+        "severity": "HIGH",
+        "code_snippet": "  15     user = User.find(params[:id])\n  16     user.destroy\n  17     redirect_to admin_path\n  18   end\n  19 end",
+        "cwe": null,
+        "tool": "sarif",
+        "language": "ruby",
+        "raw": {
+          "ruleId": "Missing Authorization",
+          "message": {
+            "text": "No authorization check before destroying a record."
+          },
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/controllers/admin_controller.rb"
+                },
+                "region": {
+                  "startLine": 28,
+                  "startColumn": 3
+                }
+              }
+            }
+          ]
+        }
+      },
+      "verdict": "UNCLEAR",
+      "confidence": 0.5,
+      "reasoning": "Mock triage based on keyword signals in the prompt and code context. High signals=False, false-positive signals=False.",
+      "compliance_hits": [],
+      "remediation": "Review the finding manually or re-run with a real LLM provider."
+    }
+  ]
+}

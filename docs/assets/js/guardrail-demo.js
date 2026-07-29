@@ -1,17 +1,19 @@
 /**
- * AI-Driven CI/CD Security Guardrail — Interactive Browser Demo
+ * AI-Driven CI/CD Security Guardrail - Interactive Browser Demo
  *
- * Runs entirely client-side. It parses SARIF, SonarQube JSON, or cppcheck XML
- * reports, maps CWEs to compliance controls, and uses a deterministic mock
- * classifier to triage findings just like the Python CLI.
+ * Sample reports are produced by the real guardrail Python pipeline (mock
+ * provider) and committed as JSON. Custom input is still triaged client-side
+ * with a deterministic fallback classifier.
  */
 
 (function () {
   "use strict";
 
+  const REPORT_KEYS = ["sarif", "brakeman", "semgrep", "sonar", "cppcheck"];
+
   const SAMPLES = {
     sarif: {
-      label: "SARIF sample",
+      label: "SARIF sample (C/C++)",
       data: JSON.stringify(
         {
           "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2-1-0.json",
@@ -22,44 +24,162 @@
                 driver: {
                   name: "Demo SAST",
                   rules: [
-                    {
-                      id: "CWE-121",
-                      name: "StackBasedBufferOverflow",
-                      shortDescription: { text: "Stack-based buffer overflow" }
-                    }
+                    { id: "CWE-121", name: "StackBasedBufferOverflow", shortDescription: { text: "Stack-based buffer overflow" } },
+                    { id: "unused-variable", shortDescription: { text: "Unused local variable" } },
+                    { id: "CWE-457", shortDescription: { text: "Use of uninitialized variable" } },
+                    { id: "missing-default-case", shortDescription: { text: "Missing default in switch" } },
+                    { id: "CWE-415", shortDescription: { text: "Double free" } }
                   ]
                 }
               },
               results: [
                 {
                   ruleId: "CWE-121",
-                  message: {
-                    text: "Possible stack-based buffer overflow due to unchecked strcpy."
-                  },
+                  message: { text: "Possible stack-based buffer overflow due to unchecked strcpy." },
                   level: "error",
-                  locations: [
-                    {
-                      physicalLocation: {
-                        artifactLocation: { uri: "sample_code/vulnerable.c" },
-                        region: { startLine: 14, startColumn: 5 }
-                      }
-                    }
-                  ]
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "sample_code/vulnerable.c" }, region: { startLine: 14, startColumn: 5 } } }]
                 },
                 {
                   ruleId: "unused-variable",
-                  message: {
-                    text: "Local variable 'result' is assigned but never used."
-                  },
+                  message: { text: "Local variable 'result' is assigned but never used." },
                   level: "note",
-                  locations: [
-                    {
-                      physicalLocation: {
-                        artifactLocation: { uri: "sample_code/false_positive.c" },
-                        region: { startLine: 13, startColumn: 9 }
-                      }
-                    }
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "sample_code/false_positive.c" }, region: { startLine: 13, startColumn: 9 } } }]
+                },
+                {
+                  ruleId: "CWE-457",
+                  message: { text: "Variable 'total' may be used before it is initialized." },
+                  level: "warning",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "sample_code/vulnerable.c" }, region: { startLine: 22, startColumn: 10 } } }]
+                },
+                {
+                  ruleId: "missing-default-case",
+                  message: { text: "Switch statement does not have a default case." },
+                  level: "note",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "sample_code/vulnerable.c" }, region: { startLine: 35, startColumn: 5 } } }]
+                },
+                {
+                  ruleId: "CWE-415",
+                  message: { text: "Memory is freed more than once." },
+                  level: "error",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "sample_code/vulnerable.c" }, region: { startLine: 41, startColumn: 5 } } }]
+                }
+              ]
+            }
+          ]
+        },
+        null,
+        2
+      )
+    },
+    brakeman: {
+      label: "Brakeman SARIF (Ruby)",
+      data: JSON.stringify(
+        {
+          version: "2.1.0",
+          runs: [
+            {
+              tool: {
+                driver: {
+                  name: "Brakeman",
+                  language: "ruby",
+                  rules: [
+                    { id: "SQL Injection", shortDescription: { text: "Possible SQL injection" } },
+                    { id: "Unused Method", shortDescription: { text: "Method never called" } },
+                    { id: "Weak Hash", shortDescription: { text: "Weak hash algorithm" } },
+                    { id: "Unscoped Query", shortDescription: { text: "Unscoped ActiveRecord query" } },
+                    { id: "Missing Authorization", shortDescription: { text: "No authorization check" } }
                   ]
+                }
+              },
+              results: [
+                {
+                  ruleId: "SQL Injection",
+                  message: { text: "Possible SQL injection in User.find_by_sql call." },
+                  level: "error",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "app/models/user.rb" }, region: { startLine: 42, startColumn: 5 } } }]
+                },
+                {
+                  ruleId: "Unused Method",
+                  message: { text: "Method admin? is never used." },
+                  level: "note",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "app/controllers/admin_controller.rb" }, region: { startLine: 12, startColumn: 3 } } }]
+                },
+                {
+                  ruleId: "Weak Hash",
+                  message: { text: "MD5 used for password digest." },
+                  level: "warning",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "app/models/user.rb" }, region: { startLine: 18, startColumn: 10 } } }]
+                },
+                {
+                  ruleId: "Unscoped Query",
+                  message: { text: "Unscoped ActiveRecord query may leak records across tenants." },
+                  level: "warning",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "app/controllers/posts_controller.rb" }, region: { startLine: 7, startColumn: 15 } } }]
+                },
+                {
+                  ruleId: "Missing Authorization",
+                  message: { text: "No authorization check before destroying a record." },
+                  level: "error",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "app/controllers/admin_controller.rb" }, region: { startLine: 28, startColumn: 3 } } }]
+                }
+              ]
+            }
+          ]
+        },
+        null,
+        2
+      )
+    },
+    semgrep: {
+      label: "Semgrep SARIF (JavaScript)",
+      data: JSON.stringify(
+        {
+          version: "2.1.0",
+          runs: [
+            {
+              tool: {
+                driver: {
+                  name: "Semgrep",
+                  language: "javascript",
+                  rules: [
+                    { id: "jwt-none-alg", shortDescription: { text: "JWT none algorithm" } },
+                    { id: "no-eval", shortDescription: { text: "Dangerous use of eval" } },
+                    { id: "hardcoded-secret", shortDescription: { text: "Hardcoded credential" } },
+                    { id: "regex-dos", shortDescription: { text: "Regular expression denial of service" } },
+                    { id: "insecure-random", shortDescription: { text: "Predictable random value" } }
+                  ]
+                }
+              },
+              results: [
+                {
+                  ruleId: "jwt-none-alg",
+                  message: { text: "Insecure JWT algorithm 'none' used." },
+                  level: "error",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "src/auth.js" }, region: { startLine: 23, startColumn: 10 } } }]
+                },
+                {
+                  ruleId: "no-eval",
+                  message: { text: "Use of eval can lead to code injection." },
+                  level: "error",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "src/utils.js" }, region: { startLine: 8, startColumn: 15 } } }]
+                },
+                {
+                  ruleId: "hardcoded-secret",
+                  message: { text: "Hardcoded API key detected." },
+                  level: "error",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "src/config.js" }, region: { startLine: 5, startColumn: 20 } } }]
+                },
+                {
+                  ruleId: "regex-dos",
+                  message: { text: "User input reaches a regular expression with potential exponential time." },
+                  level: "warning",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "src/validation.js" }, region: { startLine: 31, startColumn: 22 } } }]
+                },
+                {
+                  ruleId: "insecure-random",
+                  message: { text: "Math.random() used for security-sensitive value." },
+                  level: "warning",
+                  locations: [{ physicalLocation: { artifactLocation: { uri: "src/tokens.js" }, region: { startLine: 14, startColumn: 18 } } }]
                 }
               ]
             }
@@ -89,6 +209,30 @@
               line: 13,
               message: "Local variable 'result' is assigned but never used.",
               cwes: []
+            },
+            {
+              rule: "c:UninitializedVariable",
+              severity: "MAJOR",
+              component: "sample_code/vulnerable.c",
+              line: 22,
+              message: "Variable 'total' may be used before it is initialized.",
+              cwes: ["CWE-457"]
+            },
+            {
+              rule: "c:MissingDefaultInSwitch",
+              severity: "MINOR",
+              component: "sample_code/vulnerable.c",
+              line: 35,
+              message: "Switch statement does not have a default case.",
+              cwes: []
+            },
+            {
+              rule: "cpp:S5025",
+              severity: "BLOCKER",
+              component: "sample_code/vulnerable.c",
+              line: 41,
+              message: "Memory is freed more than once.",
+              cwes: ["CWE-415"]
             }
           ]
         },
@@ -100,34 +244,36 @@
       label: "cppcheck XML sample",
       data: `<?xml version="1.0" encoding="UTF-8"?>
 <results version="2">
-  <cppcheck checkLevel="exhaustive">
-    <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds." file0="sample_code/vulnerable.c" file="sample_code/vulnerable.c" line="14" cwe="119"/>
-    <error id="unusedVariable" severity="style" msg="Unused variable: result" file0="sample_code/false_positive.c" file="sample_code/false_positive.c" line="13"/>
-  </cppcheck>
+  <errors>
+    <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds." cwe="119">
+      <location file="sample_code/vulnerable.c" line="14" column="5"/>
+    </error>
+    <error id="uninitvar" severity="error" msg="Variable 'total' is not initialized." cwe="457">
+      <location file="sample_code/vulnerable.c" line="22" column="10"/>
+    </error>
+    <error id="doubleFree" severity="error" msg="Memory is freed more than once." cwe="415">
+      <location file="sample_code/vulnerable.c" line="41" column="5"/>
+    </error>
+    <error id="unusedVariable" severity="style" msg="Unused variable: result">
+      <location file="sample_code/false_positive.c" line="13" column="9"/>
+    </error>
+    <error id="missingDefaultCase" severity="style" msg="Switch statement does not have a default case.">
+      <location file="sample_code/vulnerable.c" line="35" column="5"/>
+    </error>
+  </errors>
 </results>`
     }
   };
 
-  const SOURCE_SNIPPETS = {
-    "sample_code/vulnerable.c": [
-      "void process_input(const char *input) {",
-      "    char buffer[64];",
-      "    /* Vulnerable to buffer overflow (CWE-121) */",
-      "    strcpy(buffer, input);",
-      "    printf(\"Processed: %s\\n\", buffer);",
-      "}"
-    ].join("\n"),
-    "sample_code/false_positive.c": [
-      "int calculate(int a, int b) {",
-      "    /* Static analyzer might complain this variable is unused. */",
-      "    int result = a + b;",
-      "    return result;",
-      "}"
-    ].join("\n")
-  };
-
   let complianceIndex = null;
   let complianceRules = null;
+  let reportBaseUrl = "";
+  let currentResults = [];
+  let currentSummary = null;
+  let verdictChart = null;
+  let currentSort = "severity";
+  let currentFilter = "all";
+  let currentSearch = "";
 
   function ready(fn) {
     if (document.readyState !== "loading") {
@@ -166,8 +312,7 @@
 
   function parseReport(text, format) {
     if (format === "sarif" || (!format && text.trim().startsWith("{"))) {
-      const data = JSON.parse(text);
-      return parseSarif(data);
+      return parseSarif(JSON.parse(text));
     }
     if (format === "sonar") {
       return parseSonar(JSON.parse(text));
@@ -175,7 +320,6 @@
     if (format === "cppcheck") {
       return parseCppcheck(text);
     }
-    // Best-effort auto detect
     const trimmed = text.trim();
     if (trimmed.startsWith("<")) return parseCppcheck(text);
     const data = JSON.parse(text);
@@ -187,10 +331,6 @@
   function parseSarif(data) {
     const findings = [];
     for (const run of data.runs || []) {
-      const rules = {};
-      for (const rule of run.tool?.driver?.rules || []) {
-        rules[rule.id] = rule;
-      }
       for (const result of run.results || []) {
         const physical = result.locations?.[0]?.physicalLocation || {};
         const region = physical.region || {};
@@ -233,14 +373,15 @@
     const doc = parser.parseFromString(xmlText, "application/xml");
     const findings = [];
     for (const error of doc.querySelectorAll("error")) {
-      const file = error.getAttribute("file") || error.getAttribute("file0") || "";
+      const location = error.querySelector("location");
+      const file = location?.getAttribute("file") || "";
       const cweAttr = error.getAttribute("cwe");
       findings.push({
         ruleId: error.getAttribute("id") || "unknown",
         message: error.getAttribute("msg") || "",
         filePath: file,
-        line: parseInt(error.getAttribute("line") || "0", 10),
-        column: 0,
+        line: parseInt(location?.getAttribute("line") || "0", 10),
+        column: parseInt(location?.getAttribute("column") || "0", 10),
         severity: error.getAttribute("severity") === "error" ? "HIGH" : error.getAttribute("severity") === "warning" ? "MEDIUM" : "LOW",
         cwe: cweAttr ? "CWE-" + cweAttr : null,
         tool: "cppcheck",
@@ -254,7 +395,15 @@
     if (finding.cwe) return finding.cwe;
     const text = (finding.ruleId + " " + finding.message).toUpperCase();
     if (text.includes("BUFFER") || text.includes("OVERFLOW") || text.includes("STRCPY") || text.includes("CWE-121")) return "CWE-121";
+    if (text.includes("SQL") || text.includes("INJECTION")) return "CWE-89";
+    if (text.includes("EVAL")) return "CWE-94";
+    if (text.includes("JWT") || text.includes("CRYPTO")) return "CWE-327";
     if (text.includes("UNUSED")) return "CWE-563";
+    if (text.includes("DOUBLE") || text.includes("FREE")) return "CWE-415";
+    if (text.includes("UNINIT")) return "CWE-457";
+    if (text.includes("HARDCODED") || text.includes("SECRET")) return "CWE-798";
+    if (text.includes("REGEX") || text.includes("REDOS")) return "CWE-1333";
+    if (text.includes("RANDOM")) return "CWE-338";
     return null;
   }
 
@@ -262,29 +411,39 @@
     const text = (finding.ruleId + " " + finding.message).toLowerCase();
     const cwe = normalizeCwe(finding.cwe);
     const memoryCwes = ["CWE-119", "CWE-120", "CWE-121", "CWE-122", "CWE-125", "CWE-131", "CWE-190", "CWE-415", "CWE-416", "CWE-590", "CWE-680", "CWE-787"];
+    const webCwes = ["CWE-79", "CWE-89", "CWE-94", "CWE-327", "CWE-798"];
     const fpWords = ["unused", "unreachable", "style", "dead store", "redundant", "informational", "cosmetic"];
-    const highWords = ["overflow", "buffer", "strcpy", "memcpy", "stack", "heap", "use-after-free", "double free", "null terminator", "bounds", "out-of-bounds", "injection", "format string"];
+    const highWords = ["overflow", "buffer", "strcpy", "memcpy", "stack", "heap", "use-after-free", "double free", "null terminator", "bounds", "out-of-bounds", "injection", "format string", "sql", "eval", "jwt", "hardcoded", "secret", "md5", "weak", "hash", "unauthorized", "unscoped", "authorization", "uninitialized"];
+    const unclearWords = ["missing", "default"];
 
-    if (memoryCwes.includes(cwe) || highWords.some((w) => text.includes(w))) {
+    if (memoryCwes.includes(cwe) || webCwes.includes(cwe) || highWords.some((w) => text.includes(w))) {
       return {
         verdict: "HIGH_PRIORITY",
         confidence: 0.93,
-        reasoning: "The finding points to a memory-safety or security-sensitive code path that is likely exploitable.",
-        remediation: "Replace unsafe calls with bounded alternatives (e.g., strncpy, snprintf), validate sizes, and run targeted tests."
+        reasoning: "The finding matches a memory-safety or injection-style rule and is likely exploitable.",
+        remediation: "Replace unsafe calls with bounded alternatives, validate input sizes, and add targeted tests before closing."
       };
     }
     if (fpWords.some((w) => text.includes(w))) {
       return {
         verdict: "FALSE_POSITIVE",
         confidence: 0.88,
-        reasoning: "The warning is stylistic or concerns an unused symbol; it does not represent a security risk.",
-        remediation: "Remove the unused element or add an documented suppression if the code is intentional."
+        reasoning: "The warning is stylistic or refers to an unused symbol; it does not present a security risk.",
+        remediation: "Remove the unused element or add a documented suppression if the code is intentional."
+      };
+    }
+    if (unclearWords.some((w) => text.includes(w))) {
+      return {
+        verdict: "UNCLEAR",
+        confidence: 0.66,
+        reasoning: "The warning could indicate a real issue, but the available context is insufficient for a confident verdict.",
+        remediation: "Manually review the finding and add context or a documented suppression once the intent is confirmed."
       };
     }
     return {
       verdict: "UNCLEAR",
       confidence: 0.64,
-      reasoning: "There is not enough context to confidently triage this warning.",
+      reasoning: "The available context is insufficient to confidently triage this warning.",
       remediation: "Manually review the finding or provide additional context to the triage engine."
     };
   }
@@ -304,8 +463,9 @@
     return results;
   }
 
-  function getSnippet(filePath) {
-    return SOURCE_SNIPPETS[filePath] || "";
+  function severityRank(severity) {
+    const map = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+    return map[severity] || 0;
   }
 
   function renderVerdictBadge(verdict) {
@@ -319,73 +479,171 @@
   }
 
   function renderComplianceHits(hits) {
-    if (!hits.length) return "<em>None mapped</em>";
+    if (!hits.length) return "<em class='muted'>None</em>";
     return hits
       .map(
         (h) =>
-          `<span class="guardrail-badge badge-control" title="${h.description}">${h.framework}: ${h.ruleId}</span>`
+          `<span class="guardrail-badge badge-control" title="${escapeHtml(h.description || "")}">${h.framework}: ${h.rule_id || h.ruleId}</span>`
       )
       .join(" ");
   }
 
-  function renderResults(results) {
-    const summary = { total: results.length, high: 0, fp: 0, unclear: 0 };
-    for (const r of results) {
-      if (r.verdict === "HIGH_PRIORITY") summary.high++;
-      else if (r.verdict === "FALSE_POSITIVE") summary.fp++;
-      else summary.unclear++;
+  function updateSummary(summary) {
+    currentSummary = summary;
+    document.getElementById("metric-total").textContent = summary.total;
+    document.getElementById("metric-high").textContent = summary.high_priority;
+    document.getElementById("metric-fp").textContent = summary.false_positive;
+    document.getElementById("metric-unclear").textContent = summary.unclear;
+
+    const ciBadge = document.getElementById("ci-verdict");
+    if (summary.high_priority > 0) {
+      ciBadge.textContent = "CI: Fail";
+      ciBadge.className = "ci-verdict-badge ci-fail";
+      ciBadge.title = "Build would fail because high-priority risks remain.";
+    } else {
+      ciBadge.textContent = "CI: Pass";
+      ciBadge.className = "ci-verdict-badge ci-pass";
+      ciBadge.title = "Build would pass; no high-priority risks detected.";
     }
 
+    document.getElementById("guardrail-empty-state").style.display = "none";
     const summaryEl = document.getElementById("guardrail-summary");
     summaryEl.style.display = "block";
-    summaryEl.innerHTML = `
-      <div class="guardrail-grid">
-        <div class="metric-card"><span class="metric-value">${summary.total}</span><span class="metric-label">Findings</span></div>
-        <div class="metric-card metric-high"><span class="metric-value">${summary.high}</span><span class="metric-label">High Priority</span></div>
-        <div class="metric-card metric-fp"><span class="metric-value">${summary.fp}</span><span class="metric-label">False Positives</span></div>
-        <div class="metric-card metric-unclear"><span class="metric-value">${summary.unclear}</span><span class="metric-label">Unclear</span></div>
-      </div>
-      <div class="ci-verdict ${summary.high > 0 ? "ci-fail" : "ci-pass"}">
-        <strong>CI Verdict:</strong> ${summary.high > 0 ? "Build would fail — high-priority risks remain." : "Build would pass — no high-priority risks."}
-      </div>
-    `;
+    summaryEl.classList.add("fade-in");
+    renderChart(summary);
+  }
 
+  function renderChart(summary) {
+    const ctx = document.getElementById("verdict-chart");
+    if (!ctx) return;
+    if (verdictChart) {
+      verdictChart.destroy();
+    }
+    verdictChart = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["High Priority", "False Positive", "Unclear"],
+        datasets: [
+          {
+            data: [summary.high_priority, summary.false_positive, summary.unclear],
+            backgroundColor: ["#ef4444", "#10b981", "#f59e0b"],
+            borderWidth: 0,
+            hoverOffset: 8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { padding: 16, usePointStyle: true } }
+        },
+        animation: { animateScale: true, animateRotate: true }
+      }
+    });
+  }
+
+  function languageFromPath(path) {
+    const ext = (path || "").split(".").pop()?.toLowerCase();
+    const map = { c: "c", cpp: "c", h: "c", rb: "ruby", js: "javascript", ts: "javascript", py: "python", tf: "python" };
+    return map[ext] || "clike";
+  }
+
+  function renderTable(items) {
     const tbody = document.getElementById("guardrail-results-body");
     tbody.innerHTML = "";
-    if (results.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5"><em>No findings in this report.</em></td></tr>`;
+    if (items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5"><em class="muted">No findings match the current filters.</em></td></tr>`;
       document.getElementById("guardrail-results").style.display = "block";
       return;
     }
 
-    results.forEach((r, idx) => {
-      const f = r.finding;
+    items.forEach((item, idx) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td class="finding-loc">${f.filePath || "—"}<br><small>line ${f.line || "—"}${f.column ? ":" + f.column : ""}</small></td>
-        <td><code>${f.ruleId}</code><br><small class="cwe-label">${f.cwe || "—"}</small></td>
-        <td>${renderComplianceHits(r.complianceHits)}</td>
-        <td>${renderVerdictBadge(r.verdict)}</td>
-        <td><div class="confidence-bar" style="--value:${Math.round(r.confidence * 100)}%"></div><small>${Math.round(r.confidence * 100)}%</small></td>
+        <td class="finding-loc">${escapeHtml(item.filePath || "-")}<br><small>line ${item.line || "-"}${item.column ? ":" + item.column : ""}</small></td>
+        <td><code>${escapeHtml(String(item.ruleId))}</code><br><small class="cwe-label">${item.cwe || "-"}</small></td>
+        <td>${renderComplianceHits(item.complianceHits)}</td>
+        <td class="verdict-cell">${renderVerdictBadge(item.verdict)}</td>
+        <td><div class="confidence-bar" style="--value:${Math.round(item.confidence * 100)}%"></div><small>${Math.round(item.confidence * 100)}%</small></td>
       `;
       const detailRow = document.createElement("tr");
       detailRow.className = "detail-row";
-      const snippet = getSnippet(f.filePath);
+      const snippet = item.snippet || "";
+      const langClass = languageFromPath(item.filePath);
+      const locationText = `${escapeHtml(item.filePath || "-")} — line ${item.line || "-"}${item.column ? ":" + item.column : ""}`;
+      const verdictLabel = item.verdict === "HIGH_PRIORITY" ? "High Priority" : item.verdict === "FALSE_POSITIVE" ? "False Positive" : "Unclear";
       detailRow.innerHTML = `
         <td colspan="5">
           <div class="detail-content">
-            <p><strong>Message:</strong> ${f.message || "—"}</p>
-            <p><strong>Reasoning:</strong> ${r.reasoning}</p>
-            <p><strong>Remediation:</strong> ${r.remediation}</p>
-            ${snippet ? `<pre><code>${escapeHtml(snippet)}</code></pre>` : ""}
+            <div class="detail-header">
+              <div>
+                <h4 class="detail-location">${locationText}</h4>
+                <p class="detail-rule"><code>${escapeHtml(String(item.ruleId))}</code> · ${item.cwe || "No CWE"}</p>
+              </div>
+              <button type="button" class="detail-close" aria-label="Close details">Close</button>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-col detail-reasoning">
+                <div class="detail-block">
+                  <h4>Message</h4>
+                  <p>${escapeHtml(item.message || "-")}</p>
+                </div>
+                <div class="detail-block">
+                  <h4>Reasoning</h4>
+                  <p>${escapeHtml(item.reasoning)}</p>
+                </div>
+                <div class="detail-block">
+                  <h4>Remediation</h4>
+                  <p>${escapeHtml(item.remediation)}</p>
+                </div>
+              </div>
+              <div class="detail-col detail-context">
+                <div class="detail-block">
+                  <h4>Finding Details</h4>
+                  <p><strong>Verdict:</strong> ${verdictLabel} · <strong>Confidence:</strong> ${Math.round(item.confidence * 100)}%</p>
+                  <p><strong>Severity:</strong> ${item.severity || "-"} · <strong>Line:</strong> ${item.line || "-"}</p>
+                </div>
+                ${snippet ? `<div class="detail-block"><h4>Code Context</h4><pre><code class="language-${langClass}">${escapeHtml(snippet)}</code></pre></div>` : `<div class="detail-block"><h4>Code Context</h4><p class="muted">No source snippet available for this finding.</p></div>`}
+                <div class="detail-block">
+                  <h4>Compliance Controls</h4>
+                  ${item.complianceHits.length ? renderComplianceHits(item.complianceHits) : "<p class='muted'>None mapped</p>"}
+                </div>
+              </div>
+            </div>
           </div>
         </td>
       `;
       detailRow.style.display = "none";
-      row.addEventListener("click", () => {
-        detailRow.style.display = detailRow.style.display === "none" ? "table-row" : "none";
-      });
+      detailRow.id = `guardrail-detail-${idx}`;
+      row.setAttribute("tabindex", "0");
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-expanded", "false");
+      row.setAttribute("aria-controls", detailRow.id);
       row.style.cursor = "pointer";
+      function toggleRow() {
+        const showing = detailRow.style.display === "none";
+        detailRow.style.display = showing ? "table-row" : "none";
+        row.setAttribute("aria-expanded", String(showing));
+        if (showing && window.Prism) {
+          Prism.highlightAllUnder(detailRow);
+        }
+      }
+      const closeBtn = detailRow.querySelector(".detail-close");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          detailRow.style.display = "none";
+          row.setAttribute("aria-expanded", "false");
+        });
+      }
+      row.addEventListener("click", toggleRow);
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleRow();
+        }
+      });
       tbody.appendChild(row);
       tbody.appendChild(detailRow);
     });
@@ -404,14 +662,181 @@
     el.style.display = msg ? "block" : "none";
   }
 
+  function setPipelineStep(step, label) {
+    document.querySelectorAll(".pipeline-step").forEach((el) => {
+      el.classList.remove("active", "complete");
+      const s = el.dataset.step;
+      const order = { parse: 0, context: 1, compliance: 2, classify: 3, report: 4 };
+      if (order[s] < order[step]) el.classList.add("complete");
+      if (s === step) el.classList.add("active");
+    });
+    if (label) {
+      const statusText = document.getElementById("pipeline-status-text");
+      if (statusText) statusText.textContent = label;
+    }
+  }
+
+  function resetPipeline() {
+    document.querySelectorAll(".pipeline-step").forEach((el) => el.classList.remove("active", "complete"));
+    const statusText = document.getElementById("pipeline-status-text");
+    if (statusText) statusText.textContent = "Ready — click Run to start the triage pipeline.";
+  }
+
+  function sortItems(items, sortKey) {
+    const copy = [...items];
+    if (sortKey === "confidence") {
+      return copy.sort((a, b) => b.confidence - a.confidence);
+    }
+    if (sortKey === "location") {
+      return copy.sort((a, b) => (a.filePath || "").localeCompare(b.filePath || ""));
+    }
+    return copy.sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
+  }
+
+  function applyFilters() {
+    let items = currentResults.map((r) => ({
+      filePath: r.finding.file_path || r.finding.filePath,
+      ruleId: r.finding.rule_id || r.finding.ruleId,
+      cwe: r.finding.cwe,
+      line: r.finding.line,
+      column: r.finding.column,
+      severity: r.finding.severity,
+      verdict: r.verdict,
+      confidence: r.confidence,
+      message: r.finding.message,
+      reasoning: r.reasoning,
+      remediation: r.remediation,
+      snippet: r.finding.code_snippet || "",
+      complianceHits: r.compliance_hits || r.complianceHits || []
+    }));
+
+    if (currentFilter !== "all") {
+      items = items.filter((i) => i.verdict === currentFilter);
+    }
+    if (currentSearch.trim()) {
+      const q = currentSearch.toLowerCase();
+      items = items.filter((i) =>
+        [i.ruleId, i.cwe, i.filePath, i.message].some((field) =>
+          (field || "").toLowerCase().includes(q)
+        )
+      );
+    }
+    items = sortItems(items, currentSort);
+    renderTable(items);
+  }
+
+  function renderClientResults(results) {
+    currentResults = results;
+    const summary = {
+      total: results.length,
+      high_priority: results.filter((r) => r.verdict === "HIGH_PRIORITY").length,
+      false_positive: results.filter((r) => r.verdict === "FALSE_POSITIVE").length,
+      unclear: results.filter((r) => r.verdict === "UNCLEAR").length
+    };
+    updateSummary(summary);
+    applyFilters();
+    document.getElementById("guardrail-export").disabled = false;
+  }
+
+  function renderReport(report) {
+    currentResults = report.results || [];
+    const summary = report.summary || {
+      total: currentResults.length,
+      high_priority: currentResults.filter((r) => r.verdict === "HIGH_PRIORITY").length,
+      false_positive: currentResults.filter((r) => r.verdict === "FALSE_POSITIVE").length,
+      unclear: currentResults.filter((r) => r.verdict === "UNCLEAR").length
+    };
+    updateSummary(summary);
+    applyFilters();
+    document.getElementById("guardrail-export").disabled = false;
+  }
+
+  function reportUrl(key) {
+    return `${reportBaseUrl}${key}.json`;
+  }
+
+  function isSampleReport(key) {
+    return key && REPORT_KEYS.includes(key);
+  }
+
+  async function runPipeline(key, text, format) {
+    const steps = [
+      { step: "parse", label: "Parsing report…", delay: 400 },
+      { step: "context", label: "Extracting code context…", delay: 400 },
+      { step: "compliance", label: "Mapping compliance controls…", delay: 400 },
+      { step: "classify", label: "Classifying findings…", delay: 500 },
+      { step: "report", label: "Building report…", delay: 200 }
+    ];
+
+    for (const s of steps) {
+      setPipelineStep(s.step, s.label);
+      setStatus(s.label, false);
+      await new Promise((resolve) => setTimeout(resolve, s.delay));
+    }
+
+    if (isSampleReport(key)) {
+      const res = await fetch(reportUrl(key));
+      if (!res.ok) throw new Error("Failed to load real report for " + key);
+      const report = await res.json();
+      renderReport(report);
+      setStatus("Triage complete. Sample reports are produced by the guardrail CLI.", false);
+      return;
+    }
+
+    const resolvedFormat = format || (text.trim().startsWith("<") ? "cppcheck" : undefined);
+    const findings = parseReport(text, resolvedFormat);
+    const results = runTriage(findings);
+    renderClientResults(results);
+    setStatus("Triage complete. Click any row for details.", false);
+  }
+
+  function exportReport() {
+    if (!currentResults.length) return;
+    const report = {
+      summary: currentSummary,
+      results: currentResults,
+      exported_at: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "guardrail-report.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const input = document.getElementById("guardrail-input");
+      input.value = e.target.result;
+      const name = file.name.toLowerCase();
+      const formatSelect = document.getElementById("guardrail-format");
+      if (name.endsWith(".xml")) formatSelect.value = "cppcheck";
+      else if (name.endsWith(".json") && input.value.includes("\"issues\"")) formatSelect.value = "sonar";
+      else formatSelect.value = "auto";
+      setStatus(`Loaded ${file.name}. Click Run AI Guardrail to triage.`, false);
+    };
+    reader.readAsText(file);
+  }
+
   ready(async () => {
     const input = document.getElementById("guardrail-input");
     const sampleSelect = document.getElementById("guardrail-sample");
     const runBtn = document.getElementById("guardrail-run");
     const resetBtn = document.getElementById("guardrail-reset");
+    const exportBtn = document.getElementById("guardrail-export");
     const formatSelect = document.getElementById("guardrail-format");
+    const dropZone = document.getElementById("drop-zone");
+    const filterSelect = document.getElementById("filter-verdict");
+    const searchInput = document.getElementById("search-findings");
+    const sortSelect = document.getElementById("sort-findings");
+    reportBaseUrl = window.GUARDRAIL_DEMO?.reportBaseUrl || "";
 
-    // Load compliance rules
     try {
       const rulesUrl = window.GUARDRAIL_DEMO?.rulesUrl || "../data/compliance-rules.json";
       const res = await fetch(rulesUrl);
@@ -423,14 +848,12 @@
       setStatus("Could not load compliance rules; demo will run without compliance mapping.", true);
     }
 
-    // Seed default sample
     input.value = SAMPLES.sarif.data;
 
     sampleSelect.addEventListener("change", () => {
       const key = sampleSelect.value;
       if (key && SAMPLES[key]) {
         input.value = SAMPLES[key].data;
-        // Best-effort format sync
         formatSelect.value = key === "cppcheck" ? "cppcheck" : key === "sonar" ? "sonar" : "sarif";
       }
     });
@@ -439,22 +862,98 @@
       sampleSelect.value = "";
       input.value = "";
       formatSelect.value = "auto";
+      currentResults = [];
+      currentSummary = null;
       document.getElementById("guardrail-results").style.display = "none";
       document.getElementById("guardrail-summary").style.display = "none";
+      document.getElementById("guardrail-empty-state").style.display = "block";
+      document.getElementById("guardrail-export").disabled = true;
+      if (verdictChart) {
+        verdictChart.destroy();
+        verdictChart = null;
+      }
       setStatus("", false);
+      resetPipeline();
+      const statusText = document.getElementById("pipeline-status-text");
+      if (statusText) statusText.textContent = "Ready — click Run to start the triage pipeline.";
     });
 
     runBtn.addEventListener("click", async () => {
-      setStatus("Running triage…", false);
+      runBtn.disabled = true;
+      setStatus("Initializing pipeline…", false);
       try {
+        const key = sampleSelect.value;
         const format = formatSelect.value === "auto" ? undefined : formatSelect.value;
-        const findings = parseReport(input.value, format);
-        const results = runTriage(findings);
-        renderResults(results);
-        setStatus("Triage complete. Click any row to see reasoning, remediation, and code context.", false);
+        await runPipeline(key, input.value, format);
       } catch (err) {
         console.error(err);
         setStatus("Error: " + err.message, true);
+        resetPipeline();
+      } finally {
+        runBtn.disabled = false;
+      }
+    });
+
+    exportBtn.addEventListener("click", exportReport);
+
+    filterSelect.addEventListener("change", (e) => {
+      currentFilter = e.target.value;
+      if (currentResults.length) applyFilters();
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      currentSearch = e.target.value;
+      if (currentResults.length) applyFilters();
+    });
+
+    sortSelect.addEventListener("change", (e) => {
+      currentSort = e.target.value;
+      if (currentResults.length) applyFilters();
+    });
+
+    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.add("drop-zone-active"), false);
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.remove("drop-zone-active"), false);
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      const file = e.dataTransfer.files[0];
+      handleFile(file);
+    }, false);
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".sarif,.json,.xml";
+    fileInput.style.display = "none";
+    fileInput.addEventListener("change", (e) => {
+      const target = e.target;
+      if (target.files && target.files[0]) {
+        handleFile(target.files[0]);
+      }
+      target.value = "";
+    });
+    document.body.appendChild(fileInput);
+
+    function openFilePicker() {
+      fileInput.value = "";
+      fileInput.click();
+    }
+
+    dropZone.addEventListener("click", openFilePicker);
+    dropZone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openFilePicker();
       }
     });
   });
