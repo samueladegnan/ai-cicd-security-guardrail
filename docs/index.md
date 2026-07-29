@@ -51,4 +51,4 @@ docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-guardrail \
 
 ## About the author
 
-I am [Sam Degnan](https://github.com/samueladegnan), and I put this together to share my work in DevOps, secure coding, compliance mapping, and AI-assisted software engineering.
+Built by [Sam Degnan](https://github.com/samueladegnan), and I put this together to share my work in DevOps, secure coding, compliance mapping, and AI-assisted software engineering.

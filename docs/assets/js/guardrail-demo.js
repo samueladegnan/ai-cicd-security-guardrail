@@ -535,6 +535,17 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        onHover: (event, elements, chart) => {
+          chart.canvas.style.cursor = elements && elements.length ? "pointer" : "default";
+        },
+        onClick: (event, elements) => {
+          if (elements && elements.length > 0) {
+            const index = elements[0].index;
+            const labelsMap = { 0: "HIGH_PRIORITY", 1: "FALSE_POSITIVE", 2: "UNCLEAR" };
+            setVerdictFilter(labelsMap[index], false, true);
+            document.getElementById("guardrail-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        },
         plugins: {
           legend: { position: "bottom", labels: { padding: 16, usePointStyle: true } }
         },
@@ -682,6 +693,31 @@
     if (statusText) statusText.textContent = "Ready — click Run to start the triage pipeline.";
   }
 
+  function setVerdictFilter(verdict, skipApply = false, toggle = false) {
+    if (toggle && currentFilter === verdict) {
+      verdict = "all";
+    }
+    currentFilter = verdict;
+    const filterSelect = document.getElementById("filter-verdict");
+    if (filterSelect) filterSelect.value = verdict;
+
+    document.querySelectorAll(".metric-card").forEach((card) => card.classList.remove("active"));
+    const clsMap = {
+      all: ".metric-total",
+      HIGH_PRIORITY: ".metric-high",
+      FALSE_POSITIVE: ".metric-fp",
+      UNCLEAR: ".metric-unclear"
+    };
+    if (clsMap[verdict]) {
+      const card = document.querySelector(clsMap[verdict]);
+      if (card) card.classList.add("active");
+    }
+
+    if (!skipApply && currentResults.length) {
+      applyFilters();
+    }
+  }
+
   function sortItems(items, sortKey) {
     const copy = [...items];
     if (sortKey === "confidence") {
@@ -734,6 +770,7 @@
       unclear: results.filter((r) => r.verdict === "UNCLEAR").length
     };
     updateSummary(summary);
+    setVerdictFilter("all", true);
     applyFilters();
     document.getElementById("guardrail-export").disabled = false;
   }
@@ -747,6 +784,7 @@
       unclear: currentResults.filter((r) => r.verdict === "UNCLEAR").length
     };
     updateSummary(summary);
+    setVerdictFilter("all", true);
     applyFilters();
     document.getElementById("guardrail-export").disabled = false;
   }
@@ -773,6 +811,8 @@
       setStatus(s.label, false);
       await new Promise((resolve) => setTimeout(resolve, s.delay));
     }
+
+    setPipelineStep("report", "Triage complete.");
 
     if (isSampleReport(key)) {
       const res = await fetch(reportUrl(key));
@@ -864,6 +904,7 @@
       formatSelect.value = "auto";
       currentResults = [];
       currentSummary = null;
+      setVerdictFilter("all", true);
       document.getElementById("guardrail-results").style.display = "none";
       document.getElementById("guardrail-summary").style.display = "none";
       document.getElementById("guardrail-empty-state").style.display = "block";
@@ -897,8 +938,31 @@
     exportBtn.addEventListener("click", exportReport);
 
     filterSelect.addEventListener("change", (e) => {
-      currentFilter = e.target.value;
-      if (currentResults.length) applyFilters();
+      setVerdictFilter(e.target.value);
+    });
+
+    const metricCards = [
+      { cls: ".metric-total", verdict: "all" },
+      { cls: ".metric-high", verdict: "HIGH_PRIORITY" },
+      { cls: ".metric-fp", verdict: "FALSE_POSITIVE" },
+      { cls: ".metric-unclear", verdict: "UNCLEAR" }
+    ];
+
+    metricCards.forEach(({ cls, verdict }) => {
+      const card = document.querySelector(cls);
+      if (card) {
+        const applyAction = () => {
+          setVerdictFilter(verdict, false, true);
+          document.getElementById("guardrail-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        };
+        card.addEventListener("click", applyAction);
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            applyAction();
+          }
+        });
+      }
     });
 
     searchInput.addEventListener("input", (e) => {

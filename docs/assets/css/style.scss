@@ -410,17 +410,9 @@ body {
 }
 
 .demo-dashboard {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-}
-
-@media (min-width: 992px) {
-  .demo-dashboard {
-    grid-template-columns: 380px minmax(0, 1fr);
-    gap: 2.5rem;
-    align-items: start;
-  }
 }
 
 .demo-panel {
@@ -657,10 +649,23 @@ body {
 .pipeline-visual {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  overflow-x: auto;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
   padding: 0.75rem 0.25rem;
+}
+
+.pipeline-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.pipeline-group .pipeline-connector {
+  flex: 0 0 24px;
+  min-width: 24px;
 }
 
 .pipeline-step {
@@ -936,7 +941,9 @@ body {
 
 .guardrail-table th:nth-child(5),
 .guardrail-table td:nth-child(5) {
-  width: 10%;
+  width: 12%;
+  min-width: 90px;
+  white-space: nowrap;
 }
 
 .finding-loc code,
@@ -1109,5 +1116,48 @@ body {
   .summary-header {
     flex-direction: column;
   }
+}
+
+/* Interactive metric cards */
+.metric-card[role="button"] {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, outline 0.2s ease;
+}
+
+.metric-card[role="button"]:hover,
+.metric-card[role="button"]:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -1px rgba(15, 23, 42, 0.06);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.metric-card.active {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.metric-total.active,
+.metric-total[role="button"]:hover,
+.metric-total[role="button"]:focus-visible {
+  outline-color: var(--text-muted);
+}
+
+.metric-high.active,
+.metric-high[role="button"]:hover,
+.metric-high[role="button"]:focus-visible {
+  outline-color: var(--high);
+}
+
+.metric-fp.active,
+.metric-fp[role="button"]:hover,
+.metric-fp[role="button"]:focus-visible {
+  outline-color: var(--fp);
+}
+
+.metric-unclear.active,
+.metric-unclear[role="button"]:hover,
+.metric-unclear[role="button"]:focus-visible {
+  outline-color: var(--unclear);
 }
 

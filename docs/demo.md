@@ -79,29 +79,39 @@ wide: true
         <div class="pipeline-card" aria-live="polite">
           <div class="pipeline-title">Pipeline status</div>
           <div class="pipeline-visual" aria-label="Pipeline stages">
-            <div class="pipeline-step" data-step="parse">
-              <span class="pipeline-dot"></span>
-              <span class="pipeline-label">Parse</span>
+            <div class="pipeline-group">
+              <div class="pipeline-step" data-step="parse">
+                <span class="pipeline-dot"></span>
+                <span class="pipeline-label">Parse</span>
+              </div>
+              <div class="pipeline-connector" aria-hidden="true"></div>
             </div>
-            <div class="pipeline-connector" aria-hidden="true"></div>
-            <div class="pipeline-step" data-step="context">
-              <span class="pipeline-dot"></span>
-              <span class="pipeline-label">Context</span>
+            <div class="pipeline-group">
+              <div class="pipeline-step" data-step="context">
+                <span class="pipeline-dot"></span>
+                <span class="pipeline-label">Context</span>
+              </div>
+              <div class="pipeline-connector" aria-hidden="true"></div>
             </div>
-            <div class="pipeline-connector" aria-hidden="true"></div>
-            <div class="pipeline-step" data-step="compliance">
-              <span class="pipeline-dot"></span>
-              <span class="pipeline-label">Compliance</span>
+            <div class="pipeline-group">
+              <div class="pipeline-step" data-step="compliance">
+                <span class="pipeline-dot"></span>
+                <span class="pipeline-label">Compliance</span>
+              </div>
+              <div class="pipeline-connector" aria-hidden="true"></div>
             </div>
-            <div class="pipeline-connector" aria-hidden="true"></div>
-            <div class="pipeline-step" data-step="classify">
-              <span class="pipeline-dot"></span>
-              <span class="pipeline-label">Classify</span>
+            <div class="pipeline-group">
+              <div class="pipeline-step" data-step="classify">
+                <span class="pipeline-dot"></span>
+                <span class="pipeline-label">Classify</span>
+              </div>
+              <div class="pipeline-connector" aria-hidden="true"></div>
             </div>
-            <div class="pipeline-connector" aria-hidden="true"></div>
-            <div class="pipeline-step" data-step="report">
-              <span class="pipeline-dot"></span>
-              <span class="pipeline-label">Report</span>
+            <div class="pipeline-group">
+              <div class="pipeline-step" data-step="report">
+                <span class="pipeline-dot"></span>
+                <span class="pipeline-label">Report</span>
+              </div>
             </div>
           </div>
           <p id="pipeline-status-text" class="pipeline-status-text">Ready — select a sample and click Run to triage the report.</p>
@@ -119,19 +129,19 @@ wide: true
           <div id="ci-verdict" class="ci-verdict-badge"></div>
         </div>
         <div class="summary-metrics">
-          <div class="metric-card metric-total">
+          <div class="metric-card metric-total" role="button" tabindex="0" aria-label="Show all findings">
             <span class="metric-value" id="metric-total">0</span>
             <span class="metric-label">Total</span>
           </div>
-          <div class="metric-card metric-high">
+          <div class="metric-card metric-high" role="button" tabindex="0" aria-label="Filter by High Priority">
             <span class="metric-value" id="metric-high">0</span>
             <span class="metric-label">High Priority</span>
           </div>
-          <div class="metric-card metric-fp">
+          <div class="metric-card metric-fp" role="button" tabindex="0" aria-label="Filter by False Positive">
             <span class="metric-value" id="metric-fp">0</span>
             <span class="metric-label">False Positive</span>
           </div>
-          <div class="metric-card metric-unclear">
+          <div class="metric-card metric-unclear" role="button" tabindex="0" aria-label="Filter by Unclear">
             <span class="metric-value" id="metric-unclear">0</span>
             <span class="metric-label">Unclear</span>
           </div>
