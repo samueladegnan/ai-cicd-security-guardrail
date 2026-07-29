@@ -1,5 +1,5 @@
 # AI-Driven CI/CD Security Guardrail
-# Multi-stage build keeps the runtime image small and runs as a non-root user.
+# Multi-stage build keeps the runtime image small.
 
 FROM python:3.12-slim AS builder
 
