@@ -54,6 +54,10 @@ where = ["src"]
 
 [tool.setuptools_scm]
 version_file = "src/guardrail/_version.py"
+# Fallback version is used when git metadata is not available (e.g. Docker
+# builds that do not copy the .git directory). Remember to bump this on each
+# release so the packaged version stays in sync with the Git tag.
+fallback_version = "1.1.0"
 
 [tool.mypy]
 python_version = "3.10"
