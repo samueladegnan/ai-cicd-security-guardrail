@@ -34,8 +34,8 @@ Try it in your browser on the [interactive live demo](./demo). No installation o
 Or run it locally with Docker:
 
 ```bash
-docker build -t ai-guardrail .
-docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-guardrail \
+docker build -t ai-cicd-security-guardrail:latest .
+docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-cicd-security-guardrail:latest \
   tests/fixtures/sample.sarif \
   --repo-root /workspace \
   --output-markdown /workspace/report.md

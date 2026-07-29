@@ -69,3 +69,23 @@ def test_cli_entrypoint():
     )
     assert result.returncode == 0
     assert "1.0.0" in result.stdout
+
+
+def test_cli_clean_fixture_exits_zero(tmp_path):
+    """The clean fixture has no high-priority findings, so the CLI exits 0."""
+    output_json = tmp_path / "report.json"
+    exit_code = main(
+        [
+            str(FIXTURES / "clean.sarif"),
+            "--provider",
+            "mock",
+            "--repo-root",
+            ".",
+            "--output-json",
+            str(output_json),
+        ]
+    )
+    data = json.loads(output_json.read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert data["summary"]["total"] == 1
+    assert data["summary"]["high_priority"] == 0

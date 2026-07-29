@@ -61,10 +61,10 @@ See the [live demo](docs/demo.md) for an interactive browser preview, and the RE
 
 ```bash
 # Build the image
-docker build -t ai-guardrail .
+docker build -t ai-cicd-security-guardrail:latest .
 
 # Run against the sample SARIF report
-docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-guardrail \
+docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-cicd-security-guardrail:latest \
   tests/fixtures/sample.sarif \
   --repo-root /workspace \
   --output-markdown /workspace/report.md
@@ -178,6 +178,7 @@ For a detailed architecture overview, data-flow diagram, and extensibility guide
 - The **mock** provider runs entirely locally and sends no data to external services.
 - For real LLM providers, code snippets are sent to the configured API endpoint. Use a private/enterprise LLM endpoint where required by policy.
 - No API keys are hard-coded; all secrets are loaded from environment variables or CI secret stores.
+- The published Docker image runs as root so the GitHub Action can write reports back to the mounted workspace. For local use, you can run with an arbitrary non-root UID/GID using `--user $(id -u):$(id -g)` if your environment supports it.
 
 ## Roadmap
 

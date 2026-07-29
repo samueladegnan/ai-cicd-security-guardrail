@@ -112,6 +112,14 @@ def test_parse_sonarqube_extracts_cwe():
         path.unlink(missing_ok=True)
 
 
+def test_parse_clean_sarif_exits_zero(tmp_path):
+    """The clean fixture should produce only a false-positive finding."""
+    findings = SarifParser().parse(str(FIXTURES / "clean.sarif"))
+    assert len(findings) == 1
+    assert findings[0].rule_id == "unused-variable"
+    assert findings[0].file_path == "sample_code/false_positive.c"
+
+
 def test_sarif_language_inference():
     data = {
         "runs": [

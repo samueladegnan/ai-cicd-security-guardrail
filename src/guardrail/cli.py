@@ -99,6 +99,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--no-fail-on-unclear",
         action="store_true",
+        default=None,
         help="Do not treat UNCLEAR findings as CI failures.",
     )
     parser.add_argument(
@@ -267,7 +268,12 @@ def main(argv: list[str] | None = None) -> int:
     if settings.policy_path:
         fail = evaluate_policy(report, settings)
     else:
-        fail = should_fail(report, fail_on_unclear=not args.no_fail_on_unclear)
+        fail_on_unclear = (
+            not args.no_fail_on_unclear
+            if args.no_fail_on_unclear is not None
+            else settings.fail_on_unclear
+        )
+        fail = should_fail(report, fail_on_unclear=fail_on_unclear)
     return 1 if fail else 0
 
 

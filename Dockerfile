@@ -35,13 +35,7 @@ WORKDIR /app
 COPY --from=builder /opt/guardrail-venv /opt/guardrail-venv
 ENV PATH="/opt/guardrail-venv/bin:$PATH"
 
-# Create a non-root user for security.
-RUN groupadd --system guardrail && \
-    useradd --system --gid guardrail --create-home --home-dir /home/guardrail guardrail && \
-    chown -R guardrail:guardrail /app
-
-# Run as the non-root guardrail user.
-USER guardrail:guardrail
-
+# GitHub Actions Docker actions run as root by default. Keep root as the
+# default user so output files can be written back to the mounted workspace.
 ENTRYPOINT ["guardrail"]
 CMD ["--help"]

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2-1-0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Demo SAST",
+          "rules": [
+            {
+              "id": "unused-variable",
+              "name": "UnusedVariable",
+              "shortDescription": {
+                "text": "Local variable assigned but never used"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "unused-variable",
+          "message": {
+            "text": "Local variable 'result' is assigned but never used."
+          },
+          "level": "note",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample_code/false_positive.c"
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 9
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
