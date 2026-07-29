@@ -120,87 +120,11 @@ wide: true
     </section>
 
     <section class="demo-panel demo-results-panel" aria-label="Results" id="results-section">
-      <div id="guardrail-summary" class="summary-card" style="display: none;">
-        <div class="summary-header">
-          <div>
-            <h3 class="summary-title">Executive Summary</h3>
-            <p class="summary-subtitle">Breakdown of triaged findings</p>
-          </div>
-          <div id="ci-verdict" class="ci-verdict-badge"></div>
-        </div>
-        <div class="summary-metrics">
-          <div class="metric-card metric-total" role="button" tabindex="0" aria-label="Show all findings">
-            <span class="metric-value" id="metric-total">0</span>
-            <span class="metric-label">Total</span>
-          </div>
-          <div class="metric-card metric-high" role="button" tabindex="0" aria-label="Filter by High Priority">
-            <span class="metric-value" id="metric-high">0</span>
-            <span class="metric-label">High Priority</span>
-          </div>
-          <div class="metric-card metric-fp" role="button" tabindex="0" aria-label="Filter by False Positive">
-            <span class="metric-value" id="metric-fp">0</span>
-            <span class="metric-label">False Positive</span>
-          </div>
-          <div class="metric-card metric-unclear" role="button" tabindex="0" aria-label="Filter by Unclear">
-            <span class="metric-value" id="metric-unclear">0</span>
-            <span class="metric-label">Unclear</span>
-          </div>
-        </div>
-        <p class="chart-title">Verdict distribution</p>
-        <div class="chart-wrap">
-          <canvas id="verdict-chart" aria-label="Verdict distribution chart" role="img"></canvas>
-        </div>
-      </div>
-
+      <div id="guardrail-results-panel" style="display: none;"></div>
       <div id="guardrail-empty-state" class="empty-state">
         <span class="empty-icon" aria-hidden="true">🔍</span>
         <h3>No report triaged yet</h3>
         <p>Select a sample report and click <strong>Run</strong> to see the triage results.</p>
-      </div>
-
-      <div id="guardrail-results" class="results-card" style="display: none;">
-        <div class="results-toolbar">
-          <div class="filter-group">
-            <label for="filter-verdict" class="sr-only">Filter by verdict</label>
-            <select id="filter-verdict">
-              <option value="all">All verdicts</option>
-              <option value="HIGH_PRIORITY">High Priority</option>
-              <option value="FALSE_POSITIVE">False Positive</option>
-              <option value="UNCLEAR">Unclear</option>
-            </select>
-          </div>
-          <div class="search-group">
-            <label for="search-findings" class="sr-only">Search findings</label>
-            <input
-              type="search"
-              id="search-findings"
-              placeholder="Search rule, CWE, file, or message…"
-            />
-          </div>
-          <div class="sort-group">
-            <label for="sort-findings" class="sr-only">Sort by</label>
-            <select id="sort-findings">
-              <option value="severity">Sort: Severity</option>
-              <option value="confidence">Sort: Confidence</option>
-              <option value="location">Sort: Location</option>
-            </select>
-          </div>
-        </div>
-        <p class="table-hint">Click any row to expand reasoning, remediation, and code context.</p>
-        <div class="results-table-wrap">
-          <table class="guardrail-table">
-            <thead>
-              <tr>
-                <th scope="col">Location</th>
-                <th scope="col">Rule / CWE</th>
-                <th scope="col">Compliance</th>
-                <th scope="col">Verdict</th>
-                <th scope="col">Confidence</th>
-              </tr>
-            </thead>
-            <tbody id="guardrail-results-body"></tbody>
-          </table>
-        </div>
       </div>
     </section>
   </div>
@@ -213,6 +137,7 @@ wide: true
   };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ '/assets/js/guardrail-report-renderer.js' | relative_url }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>

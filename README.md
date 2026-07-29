@@ -34,6 +34,7 @@ Static-analysis tools produce a lot of noise. Most warnings are false positives,
 - **Inline PR comments:** Post high-priority findings as GitHub PR review comments.
 - **Persistent SQLite cache:** Skip redundant LLM calls across runs.
 - **CI/CD ready:** Docker container, reusable GitHub Action, and Jenkins pipeline example.
+- **Interactive report UI:** A reusable vanilla-JS dashboard, published as `guardrail-report-renderer` on npm, for embedding triage results in any web page.
 - **Self-hosting:** The guardrail runs against itself in GitHub Actions and publishes a security report.
 
 ## Quick demo
@@ -145,6 +146,8 @@ See `.github/workflows/guardrail.yml` and `docs/architecture.md` for more.
 ├── Dockerfile                      # Production-ready container
 ├── examples/pipelines/Jenkinsfile  # Jenkins pipeline example
 ├── pyproject.toml
+├── packages/                       # Reusable UI and ecosystem packages
+│   └── guardrail-report-renderer/  # npm package for the interactive triage dashboard
 ├── sample_code/                    # Vulnerable and false-positive samples
 ├── src/guardrail/
 │   ├── cli.py                      # CLI entry point

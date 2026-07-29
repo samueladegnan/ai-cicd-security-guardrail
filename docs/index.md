@@ -26,6 +26,7 @@ I built this as a portfolio project to show what secure software engineering, CI
 - **Works across languages:** C/C++, JavaScript, TypeScript, Ruby, Python, Terraform, and more.
 - **Runs without an API key** using the mock provider, perfect for demos and CI.
 - **Pluggable architecture:** swap parsers, context extractors, compliance mappers, and LLM providers.
+- **Embeddable dashboard:** includes a reusable vanilla-JS component for visualizing triage reports, also published as `guardrail-report-renderer` on npm.
 
 ## Live demo
 

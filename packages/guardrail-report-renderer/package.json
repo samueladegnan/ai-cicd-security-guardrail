@@ -1,0 +1,51 @@
+{
+  "name": "guardrail-report-renderer",
+  "version": "1.1.0",
+  "description": "Reusable vanilla-JS dashboard for AI-Driven CI/CD Security Guardrail triage reports.",
+  "main": "src/index.js",
+  "style": "src/style.css",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test:e2e": "playwright test __tests__/demo.e2e.test.js",
+    "build": "node scripts/sync-to-docs.js",
+    "sync-to-docs": "node scripts/sync-to-docs.js",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "guardrail",
+    "security",
+    "sast",
+    "triage",
+    "dashboard",
+    "sarif"
+  ],
+  "author": "Sam Degnan <samueladegnan@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samueladegnan/ai-cicd-security-guardrail.git",
+    "directory": "packages/guardrail-report-renderer"
+  },
+  "bugs": {
+    "url": "https://github.com/samueladegnan/ai-cicd-security-guardrail/issues"
+  },
+  "homepage": "https://samueladegnan.github.io/ai-cicd-security-guardrail/demo/",
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "peerDependencies": {
+    "chart.js": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "chart.js": {
+      "optional": true
+    }
+  }
+}

@@ -268,12 +268,7 @@
   let complianceIndex = null;
   let complianceRules = null;
   let reportBaseUrl = "";
-  let currentResults = [];
-  let currentSummary = null;
-  let verdictChart = null;
-  let currentSort = "severity";
-  let currentFilter = "all";
-  let currentSearch = "";
+  let renderer = null;
 
   function ready(fn) {
     if (document.readyState !== "loading") {
@@ -468,204 +463,6 @@
     return map[severity] || 0;
   }
 
-  function renderVerdictBadge(verdict) {
-    const map = {
-      HIGH_PRIORITY: ["High Priority", "verdict-high"],
-      FALSE_POSITIVE: ["False Positive", "verdict-fp"],
-      UNCLEAR: ["Unclear", "verdict-unclear"]
-    };
-    const [label, cls] = map[verdict] || [verdict, "verdict-unclear"];
-    return `<span class="guardrail-badge ${cls}">${label}</span>`;
-  }
-
-  function renderComplianceHits(hits) {
-    if (!hits.length) return "<em class='muted'>None</em>";
-    return hits
-      .map(
-        (h) =>
-          `<span class="guardrail-badge badge-control" title="${escapeHtml(h.description || "")}">${h.framework}: ${h.rule_id || h.ruleId}</span>`
-      )
-      .join(" ");
-  }
-
-  function updateSummary(summary) {
-    currentSummary = summary;
-    document.getElementById("metric-total").textContent = summary.total;
-    document.getElementById("metric-high").textContent = summary.high_priority;
-    document.getElementById("metric-fp").textContent = summary.false_positive;
-    document.getElementById("metric-unclear").textContent = summary.unclear;
-
-    const ciBadge = document.getElementById("ci-verdict");
-    if (summary.high_priority > 0) {
-      ciBadge.textContent = "CI: Fail";
-      ciBadge.className = "ci-verdict-badge ci-fail";
-      ciBadge.title = "Build would fail because high-priority risks remain.";
-    } else {
-      ciBadge.textContent = "CI: Pass";
-      ciBadge.className = "ci-verdict-badge ci-pass";
-      ciBadge.title = "Build would pass; no high-priority risks detected.";
-    }
-
-    document.getElementById("guardrail-empty-state").style.display = "none";
-    const summaryEl = document.getElementById("guardrail-summary");
-    summaryEl.style.display = "block";
-    summaryEl.classList.add("fade-in");
-    renderChart(summary);
-  }
-
-  function renderChart(summary) {
-    const ctx = document.getElementById("verdict-chart");
-    if (!ctx) return;
-    if (verdictChart) {
-      verdictChart.destroy();
-    }
-    verdictChart = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: ["High Priority", "False Positive", "Unclear"],
-        datasets: [
-          {
-            data: [summary.high_priority, summary.false_positive, summary.unclear],
-            backgroundColor: ["#ef4444", "#10b981", "#f59e0b"],
-            borderWidth: 0,
-            hoverOffset: 8
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        onHover: (event, elements, chart) => {
-          chart.canvas.style.cursor = elements && elements.length ? "pointer" : "default";
-        },
-        onClick: (event, elements) => {
-          if (elements && elements.length > 0) {
-            const index = elements[0].index;
-            const labelsMap = { 0: "HIGH_PRIORITY", 1: "FALSE_POSITIVE", 2: "UNCLEAR" };
-            setVerdictFilter(labelsMap[index], false, true);
-            document.getElementById("guardrail-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        },
-        plugins: {
-          legend: { position: "bottom", labels: { padding: 16, usePointStyle: true } }
-        },
-        animation: { animateScale: true, animateRotate: true }
-      }
-    });
-  }
-
-  function languageFromPath(path) {
-    const ext = (path || "").split(".").pop()?.toLowerCase();
-    const map = { c: "c", cpp: "c", h: "c", rb: "ruby", js: "javascript", ts: "javascript", py: "python", tf: "python" };
-    return map[ext] || "clike";
-  }
-
-  function renderTable(items) {
-    const tbody = document.getElementById("guardrail-results-body");
-    tbody.innerHTML = "";
-    if (items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5"><em class="muted">No findings match the current filters.</em></td></tr>`;
-      document.getElementById("guardrail-results").style.display = "block";
-      return;
-    }
-
-    items.forEach((item, idx) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td class="finding-loc">${escapeHtml(item.filePath || "-")}<br><small>line ${item.line || "-"}${item.column ? ":" + item.column : ""}</small></td>
-        <td><code>${escapeHtml(String(item.ruleId))}</code><br><small class="cwe-label">${item.cwe || "-"}</small></td>
-        <td>${renderComplianceHits(item.complianceHits)}</td>
-        <td class="verdict-cell">${renderVerdictBadge(item.verdict)}</td>
-        <td><div class="confidence-bar" style="--value:${Math.round(item.confidence * 100)}%"></div><small>${Math.round(item.confidence * 100)}%</small></td>
-      `;
-      const detailRow = document.createElement("tr");
-      detailRow.className = "detail-row";
-      const snippet = item.snippet || "";
-      const langClass = languageFromPath(item.filePath);
-      const locationText = `${escapeHtml(item.filePath || "-")} — line ${item.line || "-"}${item.column ? ":" + item.column : ""}`;
-      const verdictLabel = item.verdict === "HIGH_PRIORITY" ? "High Priority" : item.verdict === "FALSE_POSITIVE" ? "False Positive" : "Unclear";
-      detailRow.innerHTML = `
-        <td colspan="5">
-          <div class="detail-content">
-            <div class="detail-header">
-              <div>
-                <h4 class="detail-location">${locationText}</h4>
-                <p class="detail-rule"><code>${escapeHtml(String(item.ruleId))}</code> · ${item.cwe || "No CWE"}</p>
-              </div>
-              <button type="button" class="detail-close" aria-label="Close details">Close</button>
-            </div>
-            <div class="detail-grid">
-              <div class="detail-col detail-reasoning">
-                <div class="detail-block">
-                  <h4>Message</h4>
-                  <p>${escapeHtml(item.message || "-")}</p>
-                </div>
-                <div class="detail-block">
-                  <h4>Reasoning</h4>
-                  <p>${escapeHtml(item.reasoning)}</p>
-                </div>
-                <div class="detail-block">
-                  <h4>Remediation</h4>
-                  <p>${escapeHtml(item.remediation)}</p>
-                </div>
-              </div>
-              <div class="detail-col detail-context">
-                <div class="detail-block">
-                  <h4>Finding Details</h4>
-                  <p><strong>Verdict:</strong> ${verdictLabel} · <strong>Confidence:</strong> ${Math.round(item.confidence * 100)}%</p>
-                  <p><strong>Severity:</strong> ${item.severity || "-"} · <strong>Line:</strong> ${item.line || "-"}</p>
-                </div>
-                ${snippet ? `<div class="detail-block"><h4>Code Context</h4><pre><code class="language-${langClass}">${escapeHtml(snippet)}</code></pre></div>` : `<div class="detail-block"><h4>Code Context</h4><p class="muted">No source snippet available for this finding.</p></div>`}
-                <div class="detail-block">
-                  <h4>Compliance Controls</h4>
-                  ${item.complianceHits.length ? renderComplianceHits(item.complianceHits) : "<p class='muted'>None mapped</p>"}
-                </div>
-              </div>
-            </div>
-          </div>
-        </td>
-      `;
-      detailRow.style.display = "none";
-      detailRow.id = `guardrail-detail-${idx}`;
-      row.setAttribute("tabindex", "0");
-      row.setAttribute("role", "button");
-      row.setAttribute("aria-expanded", "false");
-      row.setAttribute("aria-controls", detailRow.id);
-      row.style.cursor = "pointer";
-      function toggleRow() {
-        const showing = detailRow.style.display === "none";
-        detailRow.style.display = showing ? "table-row" : "none";
-        row.setAttribute("aria-expanded", String(showing));
-        if (showing && window.Prism) {
-          Prism.highlightAllUnder(detailRow);
-        }
-      }
-      const closeBtn = detailRow.querySelector(".detail-close");
-      if (closeBtn) {
-        closeBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          detailRow.style.display = "none";
-          row.setAttribute("aria-expanded", "false");
-        });
-      }
-      row.addEventListener("click", toggleRow);
-      row.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          toggleRow();
-        }
-      });
-      tbody.appendChild(row);
-      tbody.appendChild(detailRow);
-    });
-
-    document.getElementById("guardrail-results").style.display = "block";
-  }
-
-  function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-  }
-
   function setStatus(msg, isError) {
     const el = document.getElementById("guardrail-status");
     el.textContent = msg;
@@ -693,100 +490,49 @@
     if (statusText) statusText.textContent = "Ready — click Run to start the triage pipeline.";
   }
 
-  function setVerdictFilter(verdict, skipApply = false, toggle = false) {
-    if (toggle && currentFilter === verdict) {
-      verdict = "all";
-    }
-    currentFilter = verdict;
-    const filterSelect = document.getElementById("filter-verdict");
-    if (filterSelect) filterSelect.value = verdict;
-
-    document.querySelectorAll(".metric-card").forEach((card) => card.classList.remove("active"));
-    const clsMap = {
-      all: ".metric-total",
-      HIGH_PRIORITY: ".metric-high",
-      FALSE_POSITIVE: ".metric-fp",
-      UNCLEAR: ".metric-unclear"
+  function normalizeResults(results) {
+    return {
+      summary: {
+        total: results.length,
+        high_priority: results.filter((r) => r.verdict === "HIGH_PRIORITY").length,
+        false_positive: results.filter((r) => r.verdict === "FALSE_POSITIVE").length,
+        unclear: results.filter((r) => r.verdict === "UNCLEAR").length
+      },
+      results: results.map((r) => ({
+        finding: r.finding,
+        verdict: r.verdict,
+        confidence: r.confidence,
+        reasoning: r.reasoning,
+        remediation: r.remediation,
+        compliance_hits: r.complianceHits || r.compliance_hits || []
+      }))
     };
-    if (clsMap[verdict]) {
-      const card = document.querySelector(clsMap[verdict]);
-      if (card) card.classList.add("active");
-    }
-
-    if (!skipApply && currentResults.length) {
-      applyFilters();
-    }
   }
 
-  function sortItems(items, sortKey) {
-    const copy = [...items];
-    if (sortKey === "confidence") {
-      return copy.sort((a, b) => b.confidence - a.confidence);
-    }
-    if (sortKey === "location") {
-      return copy.sort((a, b) => (a.filePath || "").localeCompare(b.filePath || ""));
-    }
-    return copy.sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
-  }
+  function renderResultsPanel(report) {
+    const panel = document.getElementById("guardrail-results-panel");
+    const emptyState = document.getElementById("guardrail-empty-state");
+    if (emptyState) emptyState.style.display = "none";
+    panel.style.display = "block";
 
-  function applyFilters() {
-    let items = currentResults.map((r) => ({
-      filePath: r.finding.file_path || r.finding.filePath,
-      ruleId: r.finding.rule_id || r.finding.ruleId,
-      cwe: r.finding.cwe,
-      line: r.finding.line,
-      column: r.finding.column,
-      severity: r.finding.severity,
-      verdict: r.verdict,
-      confidence: r.confidence,
-      message: r.finding.message,
-      reasoning: r.reasoning,
-      remediation: r.remediation,
-      snippet: r.finding.code_snippet || "",
-      complianceHits: r.compliance_hits || r.complianceHits || []
-    }));
+    if (!renderer) {
+      renderer = new GuardrailReportRenderer(panel, {
+        showChart: true,
+        showToolbar: true,
+        defaultSort: "severity"
+      });
+    }
 
-    if (currentFilter !== "all") {
-      items = items.filter((i) => i.verdict === currentFilter);
-    }
-    if (currentSearch.trim()) {
-      const q = currentSearch.toLowerCase();
-      items = items.filter((i) =>
-        [i.ruleId, i.cwe, i.filePath, i.message].some((field) =>
-          (field || "").toLowerCase().includes(q)
-        )
-      );
-    }
-    items = sortItems(items, currentSort);
-    renderTable(items);
+    renderer.render(report);
   }
 
   function renderClientResults(results) {
-    currentResults = results;
-    const summary = {
-      total: results.length,
-      high_priority: results.filter((r) => r.verdict === "HIGH_PRIORITY").length,
-      false_positive: results.filter((r) => r.verdict === "FALSE_POSITIVE").length,
-      unclear: results.filter((r) => r.verdict === "UNCLEAR").length
-    };
-    updateSummary(summary);
-    setVerdictFilter("all", true);
-    applyFilters();
-    document.getElementById("guardrail-export").disabled = false;
+    const report = normalizeResults(results);
+    renderResultsPanel(report);
   }
 
   function renderReport(report) {
-    currentResults = report.results || [];
-    const summary = report.summary || {
-      total: currentResults.length,
-      high_priority: currentResults.filter((r) => r.verdict === "HIGH_PRIORITY").length,
-      false_positive: currentResults.filter((r) => r.verdict === "FALSE_POSITIVE").length,
-      unclear: currentResults.filter((r) => r.verdict === "UNCLEAR").length
-    };
-    updateSummary(summary);
-    setVerdictFilter("all", true);
-    applyFilters();
-    document.getElementById("guardrail-export").disabled = false;
+    renderResultsPanel(report);
   }
 
   function reportUrl(key) {
@@ -831,13 +577,12 @@
   }
 
   function exportReport() {
-    if (!currentResults.length) return;
-    const report = {
-      summary: currentSummary,
-      results: currentResults,
+    if (!renderer || !renderer.report) return;
+    const exported = {
+      ...(renderer._originalReport || { summary: renderer.report.summary, results: renderer.report.results }),
       exported_at: new Date().toISOString()
     };
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(exported, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -872,9 +617,6 @@
     const exportBtn = document.getElementById("guardrail-export");
     const formatSelect = document.getElementById("guardrail-format");
     const dropZone = document.getElementById("drop-zone");
-    const filterSelect = document.getElementById("filter-verdict");
-    const searchInput = document.getElementById("search-findings");
-    const sortSelect = document.getElementById("sort-findings");
     reportBaseUrl = window.GUARDRAIL_DEMO?.reportBaseUrl || "";
 
     try {
@@ -902,17 +644,15 @@
       sampleSelect.value = "";
       input.value = "";
       formatSelect.value = "auto";
-      currentResults = [];
-      currentSummary = null;
-      setVerdictFilter("all", true);
-      document.getElementById("guardrail-results").style.display = "none";
-      document.getElementById("guardrail-summary").style.display = "none";
-      document.getElementById("guardrail-empty-state").style.display = "block";
-      document.getElementById("guardrail-export").disabled = true;
-      if (verdictChart) {
-        verdictChart.destroy();
-        verdictChart = null;
+      if (renderer) {
+        renderer.destroy();
+        renderer = null;
       }
+      const panel = document.getElementById("guardrail-results-panel");
+      const emptyState = document.getElementById("guardrail-empty-state");
+      if (panel) panel.style.display = "none";
+      if (emptyState) emptyState.style.display = "block";
+      document.getElementById("guardrail-export").disabled = true;
       setStatus("", false);
       resetPipeline();
       const statusText = document.getElementById("pipeline-status-text");
@@ -936,44 +676,6 @@
     });
 
     exportBtn.addEventListener("click", exportReport);
-
-    filterSelect.addEventListener("change", (e) => {
-      setVerdictFilter(e.target.value);
-    });
-
-    const metricCards = [
-      { cls: ".metric-total", verdict: "all" },
-      { cls: ".metric-high", verdict: "HIGH_PRIORITY" },
-      { cls: ".metric-fp", verdict: "FALSE_POSITIVE" },
-      { cls: ".metric-unclear", verdict: "UNCLEAR" }
-    ];
-
-    metricCards.forEach(({ cls, verdict }) => {
-      const card = document.querySelector(cls);
-      if (card) {
-        const applyAction = () => {
-          setVerdictFilter(verdict, false, true);
-          document.getElementById("guardrail-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        };
-        card.addEventListener("click", applyAction);
-        card.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            applyAction();
-          }
-        });
-      }
-    });
-
-    searchInput.addEventListener("input", (e) => {
-      currentSearch = e.target.value;
-      if (currentResults.length) applyFilters();
-    });
-
-    sortSelect.addEventListener("change", (e) => {
-      currentSort = e.target.value;
-      if (currentResults.length) applyFilters();
-    });
 
     ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
       dropZone.addEventListener(eventName, (e) => {

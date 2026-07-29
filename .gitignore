@@ -69,6 +69,8 @@ src/guardrail/_version.py
 
 # JavaScript tooling
 node_modules/
+playwright-report/
+test-results/
 
 # Guardrail SQLite cache files
 .guardrail-cache.db
