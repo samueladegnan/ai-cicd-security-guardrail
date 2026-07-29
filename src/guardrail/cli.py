@@ -7,6 +7,7 @@ import sys
 from dataclasses import replace as dc_replace
 from pathlib import Path
 
+from guardrail import __version__
 from guardrail.config import Settings
 from guardrail.logger import configure_logging, get_logger
 from guardrail.models import Language, Report, TriageVerdict
@@ -165,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s 1.0.0",
+        version=f"%(prog)s {__version__}",
     )
 
     args = parser.parse_args(argv)

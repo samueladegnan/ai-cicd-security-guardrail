@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from guardrail import __version__
 from guardrail.models import Report, TriageVerdict
 
 
@@ -79,7 +80,7 @@ class SarifReporter:
                     "tool": {
                         "driver": {
                             "name": self.tool_name,
-                            "version": "1.0.0",
+                            "version": __version__,
                             "informationUri": "https://github.com/samueladegnan/ai-cicd-security-guardrail",
                             "rules": list(rules.values()),
                         }

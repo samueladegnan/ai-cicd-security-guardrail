@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from guardrail import __version__
 from guardrail.cli import main
 
 FIXTURES = Path(__file__).with_suffix("").parent / "fixtures"
@@ -68,7 +69,7 @@ def test_cli_entrypoint():
         check=False,
     )
     assert result.returncode == 0
-    assert "1.0.0" in result.stdout
+    assert __version__ in result.stdout
 
 
 def test_cli_clean_fixture_exits_zero(tmp_path):

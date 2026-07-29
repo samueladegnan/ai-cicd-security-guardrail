@@ -64,6 +64,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Auto-generated version file
+src/guardrail/_version.py
+
 # JavaScript tooling
 node_modules/
 

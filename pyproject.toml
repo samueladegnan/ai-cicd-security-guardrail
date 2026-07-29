@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-cicd-security-guardrail"
-version = "1.0.0"
+dynamic = ["version"]
 description = "AI-Driven CI/CD Guardrail for context-aware secure code reviews across languages."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -52,17 +52,21 @@ guardrail = "guardrail.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools_scm]
+version_file = "src/guardrail/_version.py"
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
-exclude = ["venv", "build", "docs"]
+exclude = ["venv", "build", "docs", "src/guardrail/_version.py"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+extend-exclude = ["src/guardrail/_version.py"]
 
 [tool.ruff.lint]
 select = [
