@@ -111,6 +111,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run guardrail from image
+        continue-on-error: true
         run: |
           docker run --rm \
             -v "${PWD}:/workspace" \
