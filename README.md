@@ -258,6 +258,10 @@ guardrail tests/fixtures/sample.sarif \
   --provider mock
 ```
 
+## AI-assisted development
+
+This project was built with AI assistance. AI tools supported exploration, implementation, documentation, and testing, while the project direction, decisions, review, and final responsibility remain with the maintainer.
+
 ## License
 
 This project is released under the MIT License. See [LICENSE](./LICENSE) for details.

@@ -13,7 +13,6 @@
     "test": "jest",
     "test:e2e": "playwright test __tests__/demo.e2e.test.js",
     "build": "node scripts/sync-to-docs.js",
-    "sync-to-docs": "node scripts/sync-to-docs.js",
     "prepublishOnly": "npm test"
   },
   "keywords": [

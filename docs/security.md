@@ -2,7 +2,6 @@
 layout: default
 title: Security Report | AI Guardrail
 description: Automated security self-assessment of the AI Guardrail repository.
-header_description: The real Guardrail scan, with clearly labeled example data when the scan is clean or unavailable.
 permalink: /security/
 wide: true
 ---
@@ -12,7 +11,7 @@ wide: true
     <div class="report-status-label"><span class="status-dot" aria-hidden="true"></span> Live <code>src/</code> self-assessment</div>
     <h1>Security Report</h1>
     <p class="security-report-lead">
-      This page shows the latest report produced by running Bandit and Guardrail against this repository's <code>src/</code> tree in GitHub Actions.
+      This page shows the latest report produced by running Bandit and Guardrail against this repository's <code>src/</code> tree. Results are published as part of the documentation build and should be treated as an automated review aid, not a substitute for engineering judgment.
     </p>
     <dl class="security-report-details">
       <div>
@@ -21,11 +20,11 @@ wide: true
       </div>
       <div>
         <dt>Triage provider</dt>
-        <dd>Deterministic mock provider (no source leaves CI)</dd>
+        <dd>Deterministic mock provider; source stays in CI</dd>
       </div>
       <div>
-        <dt>Workflow</dt>
-        <dd><a href="{{ site.repository_url }}/blob/main/.github/workflows/pages.yml" target="_blank" rel="noopener noreferrer">GitHub Pages build ↗</a></dd>
+        <dt>Report scope</dt>
+        <dd>Repository <code>src/</code> tree only</dd>
       </div>
     </dl>
     <p class="security-report-meta security-report-timestamp">

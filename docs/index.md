@@ -47,3 +47,5 @@ The mock provider is deterministic and local, which makes it useful for tests, d
 ## About the author
 
 AI Guardrail is maintained by [Sam Degnan](https://github.com/samueladegnan), a software engineer focused on secure systems, automation, and practical developer tooling.
+
+This project was built with AI assistance. AI tools supported exploration, implementation, documentation, and testing, while the project direction, decisions, review, and final responsibility remain with the maintainer.
