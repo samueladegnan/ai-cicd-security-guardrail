@@ -41,31 +41,38 @@ jobs:
       - name: Scan repository source with Bandit
         run: |
           mkdir -p docs/_data
-          bandit -r src -f sarif -o bandit-report.sarif || {
-            exit_code=$?
-            if [ "$exit_code" -ne 1 ]; then
-              echo "Bandit failed with unexpected exit code $exit_code" >&2
-              exit "$exit_code"
-            fi
-          }
+          set +e
+          bandit -r src -f json -o bandit-report.json
+          exit_code=$?
+          set -e
+          if [ "$exit_code" -gt 1 ]; then
+            echo "Bandit failed with unexpected exit code $exit_code" >&2
+            exit "$exit_code"
+          fi
+          test -s bandit-report.json
+          python scripts/bandit_to_sarif.py bandit-report.json bandit-report.sarif
+          test -s bandit-report.sarif
 
       - name: Triage the self-scan with Guardrail
         run: |
+          set +e
           guardrail bandit-report.sarif \
             --repo-root . \
             --provider mock \
             --output-json docs/_data/guardrail-report.json \
-            --output-markdown docs/_data/guardrail-report.md || {
-              exit_code=$?
-              if [ "$exit_code" -ne 1 ]; then
-                echo "Guardrail failed with unexpected exit code $exit_code" >&2
-                exit "$exit_code"
-              fi
-            }
+            --output-markdown docs/_data/guardrail-report.md
+          exit_code=$?
+          set -e
+          if [ "$exit_code" -gt 1 ]; then
+            echo "Guardrail failed with unexpected exit code $exit_code" >&2
+            exit "$exit_code"
+          fi
 
       - name: Verify and package self-assessment report
         run: |
+          test -s bandit-report.sarif
           test -s docs/_data/guardrail-report.json
+          test -s docs/_data/guardrail-report.md
           python -c "import json; data = json.load(open('docs/_data/guardrail-report.json')); assert 'summary' in data and 'results' in data, 'Invalid report structure'; print(data['summary'])"
           cp bandit-report.sarif docs/_data/bandit-report.sarif
 
@@ -73,7 +80,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: guardrail-self-assessment
+          if-no-files-found: error
           path: |
+            bandit-report.json
             bandit-report.sarif
             docs/_data/guardrail-report.json
             docs/_data/guardrail-report.md
