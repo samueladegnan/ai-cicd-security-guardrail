@@ -1,7 +1,7 @@
 {
   "name": "guardrail-report-renderer",
   "version": "1.1.0",
-  "description": "Reusable vanilla-JS dashboard for AI-Driven CI/CD Security Guardrail triage reports.",
+  "description": "Reusable vanilla-JS dashboard for AI Guardrail triage reports.",
   "main": "src/index.js",
   "style": "src/style.css",
   "files": [

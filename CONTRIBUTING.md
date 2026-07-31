@@ -1,4 +1,4 @@
-# Contributing to AI-Driven CI/CD Security Guardrail
+# Contributing to AI Guardrail
 
 Thanks for your interest in contributing! This guide covers the workflow we follow and the checks that run in CI.
 

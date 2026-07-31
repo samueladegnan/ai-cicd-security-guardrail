@@ -1,19 +1,29 @@
-# Jekyll configuration for the AI Guardrail portfolio site.
+# Jekyll configuration for the AI Guardrail project site.
 repository: samueladegnan/ai-cicd-security-guardrail
 repository_url: https://github.com/samueladegnan/ai-cicd-security-guardrail
-title: "AI Guardrail"
+title: "AI Guardrail | Context-aware SAST triage"
 brand: "AI Guardrail"
-description: "A portfolio project that uses LLMs to triage static-analysis findings across many languages with compliance mapping."
+description: "A Python CLI and GitHub Action that turns noisy static-analysis findings into prioritized, explainable security decisions."
+logo: "/assets/favicon.svg"
+lang: en-US
+author:
+  name: "Sam Degnan"
+  url: https://github.com/samueladegnan
 remote_theme: pages-themes/cayman@v0.2.0
 plugins:
   - jekyll-remote-theme
   - jekyll-seo-tag
+  - jekyll-sitemap
 show_downloads: false
 favicon: "/assets/favicon.svg"
 demo_url: "/demo/"
 github:
   owner_name: "Sam Degnan"
   owner_url: https://github.com/samueladegnan
+social:
+  name: "Sam Degnan"
+  links:
+    - https://github.com/samueladegnan
 url: https://samueladegnan.github.io
 baseurl: "/ai-cicd-security-guardrail"
 markdown: kramdown

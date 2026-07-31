@@ -1,5 +1,5 @@
-name: AI-Driven CI/CD Security Guardrail
-description: Context-aware triage of static-analysis findings across languages using an LLM.
+name: AI Guardrail
+description: Prioritize and explain static-analysis findings with source context and compliance mapping.
 author: Sam Degnan
 branding:
   icon: shield

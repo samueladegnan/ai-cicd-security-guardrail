@@ -7,8 +7,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#157878">
+<meta name="theme-color" content="#0b3027">
 <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+<meta name="robots" content="index, follow">
 <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/guardrail-report.css?v=' | append: site.github.build_revision | relative_url }}">
 <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
@@ -18,17 +19,20 @@
 <a class="skip-link" href="#main-content">Skip to content</a>
 {% include nav.html %}
 <header class="page-header" role="banner">
-<h1 class="project-name">{{ site.brand | default: site.title | default: "AI Guardrail" }}</h1>
-<h2 class="project-tagline">{{ site.description | default: page.description }}</h2>
-<a href="{{ '/demo/' | relative_url }}" class="btn">Launch Live Demo</a>
+  <div class="page-header__inner">
+    <p class="page-header__eyebrow">Secure CI/CD tooling</p>
+    <h1 class="project-name">{{ site.brand | default: site.title | default: "AI Guardrail" }}</h1>
+    <p class="project-tagline">{{ page.header_description | default: site.description }}</p>
+    <a href="{{ '/demo/' | relative_url }}" class="demo-cta demo-cta--header">Launch Live Demo</a>
+  </div>
 </header>
 <main id="main-content" class="main-content{% if page.wide %} wide-demo{% endif %}" role="main">
 {{ content }}
 </main>
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <p class="site-footer__tagline">AI-driven triage of static-analysis findings across languages.</p>
-    <p class="site-footer__copyright">&copy; 2026 <a href="https://samueladegnan.github.io/">Samuel Degnan</a></p>
+    <p class="site-footer__tagline">Context-aware triage for static-analysis findings in CI/CD.</p>
+    <p class="site-footer__copyright">&copy; 2026 <a href="https://samueladegnan.github.io/">Sam Degnan</a></p>
   </div>
 </footer>
 </body>

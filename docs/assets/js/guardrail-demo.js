@@ -1,5 +1,5 @@
 /**
- * AI-Driven CI/CD Security Guardrail - Interactive Browser Demo
+ * AI Guardrail - Interactive Browser Demo
  *
  * Sample reports are produced by the real guardrail Python pipeline (mock
  * provider) and committed as JSON. Custom input is still triaged client-side
@@ -306,21 +306,26 @@
   }
 
   function parseReport(text, format) {
-    if (format === "sarif" || (!format && text.trim().startsWith("{"))) {
-      return parseSarif(JSON.parse(text));
-    }
-    if (format === "sonar") {
-      return parseSonar(JSON.parse(text));
-    }
-    if (format === "cppcheck") {
-      return parseCppcheck(text);
-    }
     const trimmed = text.trim();
-    if (trimmed.startsWith("<")) return parseCppcheck(text);
-    const data = JSON.parse(text);
-    if (data.runs) return parseSarif(data);
-    if (data.issues) return parseSonar(data);
-    throw new Error("Could not determine report format.");
+    if (!trimmed) {
+      throw new Error("Please provide report content to run triage.");
+    }
+
+    try {
+      if (format === "cppcheck" || trimmed.startsWith("<")) {
+        return parseCppcheck(text);
+      }
+
+      const data = JSON.parse(text);
+      if (format === "sarif" || data.runs) return parseSarif(data);
+      if (format === "sonar" || data.issues) return parseSonar(data);
+      throw new Error("Unrecognized report structure. Use SARIF, SonarQube JSON, or cppcheck XML.");
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error("Could not parse report. Please check the JSON syntax.");
+      }
+      throw error;
+    }
   }
 
   function parseSarif(data) {
@@ -366,6 +371,10 @@
   function parseCppcheck(xmlText) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(xmlText, "application/xml");
+    if (doc.querySelector("parsererror")) {
+      throw new Error("Could not parse report. Please check the XML syntax.");
+    }
+
     const findings = [];
     for (const error of doc.querySelectorAll("error")) {
       const location = error.querySelector("location");
@@ -509,6 +518,19 @@
     };
   }
 
+  function clearRenderedResults() {
+    if (renderer) {
+      renderer.destroy();
+      renderer = null;
+    }
+
+    const panel = document.getElementById("guardrail-results-panel");
+    const emptyState = document.getElementById("guardrail-empty-state");
+    if (panel) panel.style.display = "none";
+    if (emptyState) emptyState.style.display = "block";
+    document.getElementById("guardrail-export").disabled = true;
+  }
+
   function renderResultsPanel(report) {
     const panel = document.getElementById("guardrail-results-panel");
     const emptyState = document.getElementById("guardrail-empty-state");
@@ -544,6 +566,10 @@
   }
 
   async function runPipeline(key, text, format) {
+    if (!isSampleReport(key) && !text.trim()) {
+      throw new Error("Please provide report content to run triage.");
+    }
+
     const steps = [
       { step: "parse", label: "Parsing report…", delay: 400 },
       { step: "context", label: "Extracting code context…", delay: 400 },
@@ -644,15 +670,7 @@
       sampleSelect.value = "";
       input.value = "";
       formatSelect.value = "auto";
-      if (renderer) {
-        renderer.destroy();
-        renderer = null;
-      }
-      const panel = document.getElementById("guardrail-results-panel");
-      const emptyState = document.getElementById("guardrail-empty-state");
-      if (panel) panel.style.display = "none";
-      if (emptyState) emptyState.style.display = "block";
-      document.getElementById("guardrail-export").disabled = true;
+      clearRenderedResults();
       setStatus("", false);
       resetPipeline();
       const statusText = document.getElementById("pipeline-status-text");
@@ -660,15 +678,33 @@
     });
 
     runBtn.addEventListener("click", async () => {
+      const key = sampleSelect.value;
+      if (!isSampleReport(key) && !input.value.trim()) {
+        clearRenderedResults();
+        setStatus("Please provide report content to run triage.", true);
+        resetPipeline();
+        input.focus();
+        return;
+      }
+
       runBtn.disabled = true;
       setStatus("Initializing pipeline…", false);
       try {
-        const key = sampleSelect.value;
         const format = formatSelect.value === "auto" ? undefined : formatSelect.value;
         await runPipeline(key, input.value, format);
       } catch (err) {
-        console.error(err);
-        setStatus("Error: " + err.message, true);
+        const message = err instanceof Error ? err.message : "Unable to process report. Please try again.";
+        const expectedInputErrors = [
+          "Please provide report content to run triage.",
+          "Could not parse report. Please check the JSON syntax.",
+          "Could not parse report. Please check the XML syntax.",
+          "Unrecognized report structure. Use SARIF, SonarQube JSON, or cppcheck XML."
+        ];
+        if (!expectedInputErrors.includes(message)) {
+          console.error(err);
+        }
+        clearRenderedResults();
+        setStatus(message, true);
         resetPipeline();
       } finally {
         runBtn.disabled = false;

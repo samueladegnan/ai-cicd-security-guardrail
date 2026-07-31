@@ -1,5 +1,6 @@
 ---
-title: Architecture
+title: Architecture | AI Guardrail
+description: Explore the AI Guardrail data flow, extension points, compliance mapping, and CI/CD integration design.
 permalink: /architecture/
 ---
 

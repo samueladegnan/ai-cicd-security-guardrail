@@ -37,6 +37,7 @@ guardrail-report.json
 guardrail-report.md
 report.json
 report.md
+bandit-report.sarif
 *.log
 
 # Jekyll / GitHub Pages build output
@@ -45,8 +46,8 @@ _site/
 .jekyll-cache/
 .jekyll-metadata
 
-# Generated docs data
-docs/_data/guardrail-report.json
+# Generated docs data (created by CI before the Pages build)
+docs/_data/
 
 # Jekyll lockfile (we resolve fresh in Docker because the tracked lockfile
 # is incompatible with Ruby 3.2's rexml/strscan default gem handling)

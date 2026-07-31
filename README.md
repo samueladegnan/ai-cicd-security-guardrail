@@ -1,6 +1,8 @@
-# AI-Driven CI/CD Security Guardrail
+# AI Guardrail
 
-> Context-aware triage of static-analysis findings across languages using a Large Language Model.
+> A Python CLI and GitHub Action that turns noisy static-analysis findings into prioritized, explainable security decisions.
+
+Finding a real vulnerability in a long SAST report still takes engineering judgment. Guardrail handles the repetitive part: it parses findings, adds source context and compliance mappings, and helps a team decide what deserves attention first.
 
 [![CI](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml/badge.svg)](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
@@ -8,9 +10,9 @@
 
 🌐 **View the portfolio site:** [samueladegnan.github.io/ai-cicd-security-guardrail](https://samueladegnan.github.io/ai-cicd-security-guardrail)
 
-## Portfolio showcase
+## What this repository contains
 
-I built this project as a **professional portfolio piece** to show secure software engineering, DevOps automation, LLM integration, and clean Python architecture. It is fully documented, tested, and packaged as a reusable GitHub Action and Docker container.
+This is a production-minded security automation project: a typed Python package, a Docker-based GitHub Action, a reusable JavaScript report renderer, and a GitHub Pages site that documents and exercises the system. The repository tests itself in CI and publishes the resulting self-assessment on its project site.
 
 - 📖 **Project site:** [docs/index.md](docs/index.md) (deployed via GitHub Pages)
 - 🎥 **Live demo:** [docs/demo.md](docs/demo.md)
@@ -35,7 +37,7 @@ Static-analysis tools produce a lot of noise. Most warnings are false positives,
 - **Persistent SQLite cache:** Skip redundant LLM calls across runs.
 - **CI/CD ready:** Docker container, reusable GitHub Action, and Jenkins pipeline example.
 - **Interactive report UI:** A reusable vanilla-JS dashboard, published as `guardrail-report-renderer` on npm, for embedding triage results in any web page.
-- **Self-hosting:** The guardrail runs against itself in GitHub Actions and publishes a security report.
+- **Self-assessment:** Bandit scans this repository's `src/` directory, Guardrail triages the SARIF output with its local mock provider, and GitHub Pages publishes that scoped report.
 
 ## Quick demo
 
@@ -125,7 +127,7 @@ guardrail <report-path> [options]
 
 ## GitHub Actions integration
 
-The guardrail runs against itself on every push and pull request:
+The repository runs quality checks, package tests, dependency/SAST checks, container scanning, and a real self-assessment on every push and pull request. The Pages workflow repeats the self-assessment while building the public Security Report tab.
 
 ```yaml
 - name: AI Guardrail Triage
@@ -262,4 +264,4 @@ This project is released under the MIT License. See [LICENSE](./LICENSE) for det
 
 ---
 
-*I built this portfolio project to share my work in DevOps, secure coding, compliance mapping, and AI-assisted software engineering.*
+*Maintained by Sam Degnan as a practical example of secure Python engineering, CI/CD automation, and explainable security tooling.*

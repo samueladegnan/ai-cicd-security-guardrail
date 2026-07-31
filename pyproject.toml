@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ai-cicd-security-guardrail"
 dynamic = ["version"]
-description = "AI-Driven CI/CD Guardrail for context-aware secure code reviews across languages."
+description = "Python CLI and GitHub Action for explainable static-analysis triage across languages."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

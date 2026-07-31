@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
     <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563EB" />
-      <stop offset="100%" stop-color="#0F172A" />
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#14532D" />
     </linearGradient>
   </defs>
   <!-- Shield -->
@@ -12,6 +12,6 @@
   <!-- Lock shackle -->
   <path d="M40 48 v-8 a10 10 0 0 1 20 0 v8" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" />
   <!-- Keyhole -->
-  <circle cx="50" cy="59" r="4" fill="#0F172A" />
-  <path d="M50 63 L47 72 H53 Z" fill="#0F172A" />
+  <circle cx="50" cy="59" r="4" fill="#14532D" />
+  <path d="M50 63 L47 72 H53 Z" fill="#14532D" />
 </svg>

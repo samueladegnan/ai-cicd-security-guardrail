@@ -1,10 +1,10 @@
-<nav class="site-nav" aria-label="Primary">
-  <a class="site-nav-brand" href="{{ '/' | relative_url }}">
+<nav class="site-nav" aria-label="Primary navigation">
+  <a class="site-nav-brand" href="{{ '/' | relative_url }}" aria-label="AI Guardrail overview">
     AI Guardrail
   </a>
   <ul class="site-nav-links">
     <li>
-      <a href="https://samueladegnan.github.io/" target="_blank" rel="noopener noreferrer">&larr; Back to Portfolio</a>
+      <a href="https://samueladegnan.github.io/">&larr; Back to Portfolio</a>
     </li>
     <li>
       <a {% if page.path == 'index.md' or page.url == '/' %}class="active" aria-current="page"{% endif %} href="{{ '/' | relative_url }}">Overview</a>
@@ -24,7 +24,7 @@
       </a>
     </li>
     <li>
-      <a class="btn" href="{{ '/demo/' | relative_url }}">Launch Live Demo</a>
+      <a class="demo-cta demo-cta--nav" href="{{ '/demo/' | relative_url }}">Launch Live Demo</a>
     </li>
   </ul>
 </nav>

@@ -1,4 +1,6 @@
 {
+  "report_type": "illustrative-demo",
+  "provenance": "Synthetic sample output for the browser demo; not a repository scan.",
   "summary": {
     "total": 5,
     "high_priority": 1,
