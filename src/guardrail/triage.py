@@ -48,7 +48,6 @@ class TriageEngine:
             backend=settings.cache_backend,
             sqlite_path=settings.cache_sqlite_path,
         )
-        self._mem_cache: dict[str, TriageResult] = {}
 
     def run(self, findings: list[Finding], repo_root: str = ".") -> Report:
         """Run triage over all findings and return a report."""
@@ -166,4 +165,6 @@ def evaluate_policy(report: Report, settings: Settings) -> bool:
     """
     engine = get_policy_engine(settings)
     decision = engine.evaluate(report, settings)
-    return not decision.get("allow", True)
+    # A configured policy must fail closed if the engine returns an incomplete
+    # or malformed decision rather than silently allowing the build.
+    return decision.get("allow") is not True

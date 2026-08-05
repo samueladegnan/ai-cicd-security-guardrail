@@ -32,18 +32,21 @@ def detect_format(file_path: str) -> str:
     if suffix == ".json" and "sonar" in name:
         return "sonarqube"
 
-    # Try to read a bit and detect JSON/XML
+    # Inspect the complete document when the filename is not descriptive. The
+    # previous implementation concatenated a truncated prefix with a read from
+    # an already exhausted file handle, so valid larger JSON reports could not
+    # be auto-detected.
     try:
         with open(file_path, encoding="utf-8", errors="ignore") as f:
-            head = f.read(200).strip()
-        if head.startswith("<?xml") or head.startswith("<"):
+            document = f.read().lstrip()
+        if document.startswith("<?xml") or document.startswith("<"):
             return "cppcheck"  # default XML parser
-        data = json.loads(head + f.read(8192))
-        if "runs" in data:
+        data = json.loads(document)
+        if isinstance(data, dict) and "runs" in data:
             return "sarif"
-        if "issues" in data or "total" in data:
+        if isinstance(data, dict) and ("issues" in data or "total" in data):
             return "sonarqube"
-    except Exception:
+    except (OSError, json.JSONDecodeError, TypeError):
         pass
 
     raise ValueError(f"Could not detect static analysis report format for {file_path}")

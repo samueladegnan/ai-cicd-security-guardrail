@@ -50,6 +50,24 @@ jobs:
             exit "$exit_code"
           fi
           test -s bandit-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("bandit-report.json").read_text())
+          blocking = [
+              result for result in report.get("results", [])
+              if result.get("issue_severity", "").upper() in {"HIGH", "MEDIUM"}
+          ]
+          if blocking:
+              for result in blocking:
+                  print(
+                      f"Blocking Bandit finding: {result.get('test_id')} "
+                      f"{result.get('issue_severity')} {result.get('filename')}"
+                  )
+              raise SystemExit(1)
+          print(f"Bandit severity gate passed with {len(report.get('results', []))} low finding(s)")
+          PY
           python scripts/bandit_to_sarif.py bandit-report.json bandit-report.sarif
           test -s bandit-report.sarif
 
@@ -59,12 +77,13 @@ jobs:
           guardrail bandit-report.sarif \
             --repo-root . \
             --provider mock \
+            --no-fail-on-unclear \
             --output-json docs/_data/guardrail-report.json \
             --output-markdown docs/_data/guardrail-report.md
           exit_code=$?
           set -e
-          if [ "$exit_code" -gt 1 ]; then
-            echo "Guardrail failed with unexpected exit code $exit_code" >&2
+          if [ "$exit_code" -ne 0 ]; then
+            echo "Guardrail self-assessment failed with exit code $exit_code" >&2
             exit "$exit_code"
           fi
 

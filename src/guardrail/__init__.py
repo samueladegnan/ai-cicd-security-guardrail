@@ -1,4 +1,4 @@
-"""AI-Driven CI/CD Guardrail for context-aware secure coding across languages."""
+"""Explainable static-analysis triage for CI/CD pipelines."""
 
 import importlib.metadata
 

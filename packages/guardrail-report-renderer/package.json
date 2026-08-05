@@ -35,9 +35,9 @@
   },
   "homepage": "https://samueladegnan.github.io/ai-cicd-security-guardrail/demo/",
   "devDependencies": {
-    "@playwright/test": "^1.62.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "@playwright/test": "^1.62.1",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1"
   },
   "peerDependencies": {
     "chart.js": ">=4.0.0"

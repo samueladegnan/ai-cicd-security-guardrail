@@ -1,271 +1,163 @@
 # AI Guardrail
 
-> A Python CLI and GitHub Action that turns noisy static-analysis findings into prioritized, explainable security decisions.
-
-Finding a real vulnerability in a long SAST report still takes engineering judgment. Guardrail handles the repetitive part: it parses findings, adds source context and compliance mappings, and helps a team decide what deserves attention first.
+A Python CLI and GitHub Action that turns static-analysis findings into explainable CI decisions.
 
 [![CI](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml/badge.svg)](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-🌐 **View the portfolio site:** [samueladegnan.github.io/ai-cicd-security-guardrail](https://samueladegnan.github.io/ai-cicd-security-guardrail)
+**[Project site](https://samueladegnan.github.io/ai-cicd-security-guardrail/)** · **[Browser demo](https://samueladegnan.github.io/ai-cicd-security-guardrail/demo/)** · **[Security report](https://samueladegnan.github.io/ai-cicd-security-guardrail/security/)**
 
-## What this repository contains
+## The problem
 
-This is a production-minded security automation project: a typed Python package, a Docker-based GitHub Action, a reusable JavaScript report renderer, and a GitHub Pages site that documents and exercises the system. The repository tests itself in CI and publishes the resulting self-assessment on its project site.
+Static-analysis tools find possibilities. Engineers still need to inspect source context, understand impact, map the issue to a control, and decide whether the build should stop.
 
-- 📖 **Project site:** [docs/index.md](docs/index.md) (deployed via GitHub Pages)
-- 🎥 **Live demo:** [docs/demo.md](docs/demo.md)
-- 🏗️ **Architecture deep-dive:** [docs/architecture.md](docs/architecture.md)
-- 🔒 **Security report:** [docs/security.md](docs/security.md)
+AI Guardrail is the decision layer for that workflow. It accepts SARIF, SonarQube JSON, and cppcheck XML, then produces three explicit outcomes:
 
-## Why
+- **High priority** means the finding should block the build
+- **False positive** means the finding is not a security issue in the available context
+- **Unclear** means an engineer needs to review it
 
-Static-analysis tools produce a lot of noise. Most warnings are false positives, but real security issues hide among them. This guardrail parses reports, enriches findings with source context and compliance controls, and uses an LLM to decide which ones actually matter. It returns a CI-friendly exit code so real risks fail a build while false positives are filtered out.
+The tool does not replace a SAST engine or prove exploitability. It makes the next decision easier to inspect and automate.
 
-## Key features
+## What happens to a finding
 
-- **Multi-format parser support:** SARIF, SonarQube JSON, cppcheck XML.
-- **Language-aware triage:** C/C++, JavaScript, TypeScript, Ruby, Python, Terraform, and more.
-- **AST-aware context extraction:** Tree-sitter integration extracts enclosing functions/classes when available.
-- **Compliance-aware context:** CERT C, MISRA C:2012, FIPS, OWASP Top 10, CWE, and CIS AWS controls.
-- **Semantic compliance mapping (RAG):** Vector embeddings fill gaps for unmapped SAST rules.
-- **Provider-agnostic LLM layer:** OpenAI, Anthropic, Gemini, plus a zero-cost **mock** provider, with provider fallback and circuit-breaker protection.
-- **Policy-as-code triage:** Evaluate results against Open Policy Agent (OPA/Rego) policies.
-- **GitHub Advanced Security output:** Write triage results as SARIF for the Security tab.
-- **Inline PR comments:** Post high-priority findings as GitHub PR review comments.
-- **Persistent SQLite cache:** Skip redundant LLM calls across runs.
-- **CI/CD ready:** Docker container, reusable GitHub Action, and Jenkins pipeline example.
-- **Interactive report UI:** A reusable vanilla-JS dashboard, published as `guardrail-report-renderer` on npm, for embedding triage results in any web page.
-- **Self-assessment:** Bandit scans this repository's `src/` directory, Guardrail triages the SARIF output with its local mock provider, and GitHub Pages publishes that scoped report.
+1. Parse the report into a normalized `Finding` model
+2. Read bounded source context beneath the configured repository root
+3. Map CWEs and rules to selected compliance frameworks
+4. Classify with a configured provider or the deterministic local mock
+5. Write JSON, Markdown, or SARIF output
+6. Return a predictable CI exit code or evaluate an OPA policy
 
-## Quick demo
+The default provider is local and deterministic. Real providers are opt in because source context may leave the build environment.
 
-```bash
-guardrail tests/fixtures/sample.sarif --provider mock --repo-root . --output-markdown report.md
-```
+## Try it
 
-Output:
+The [browser demo](https://samueladegnan.github.io/ai-cicd-security-guardrail/demo/) uses clearly labeled synthetic reports. It parses custom SARIF, SonarQube JSON, and cppcheck XML in the browser. It does not upload files or scan your device.
 
-```text
-Guardrail Summary: {"total":2,"high_priority":1,"false_positive":1,"unclear":0}
-
-High-priority findings:
-  - CWE-121 at sample_code/vulnerable.c:14 (90% confidence)
-```
-
-The exit code is **1** because a high-priority security finding remains, which is the behavior you want in CI/CD.
-
-See the [live demo](docs/demo.md) for an interactive browser preview, and the README sections below for Docker, real LLM providers, and CI/CD examples.
-
-## Quick start
-
-### Run with Docker (no API key required)
-
-```bash
-# Build the image
-docker build -t ai-cicd-security-guardrail:latest .
-
-# Run against the sample SARIF report
-docker run --rm -v "$(pwd):/workspace" --workdir /workspace ai-cicd-security-guardrail:latest \
-  tests/fixtures/sample.sarif \
-  --repo-root /workspace \
-  --output-markdown /workspace/report.md
-```
-
-### Run locally
-
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -e .
-
-# Mock provider (no API key)
-guardrail tests/fixtures/sample.sarif --provider mock --output-markdown report.md
-```
-
-### Run tests
+For the actual CLI:
 
 ```bash
 pip install -e ".[dev]"
-pytest
+guardrail tests/fixtures/sample.sarif \
+  --provider mock \
+  --repo-root . \
+  --output-json report.json \
+  --output-markdown report.md
 ```
 
-### Serve the docs site locally (Docker)
+The sample contains one intentionally vulnerable C finding and one benign warning. The command returns exit code `1` and writes a report with one high-priority finding. Run the clean fixture to exercise a passing build.
 
-No Ruby/Bundler installation required.
+```bash
+guardrail tests/fixtures/clean.sarif --provider mock --repo-root .
+```
+
+## Why it is technically interesting
+
+- A typed Python pipeline with pluggable report parsers, context strategies, compliance mappers, provider clients, reporters, and policy engines
+- Safe source-path resolution that rejects traversal and symlink escapes
+- Bounded concurrency, transient retry handling, provider fallback, circuit breakers, and SQLite caching
+- SARIF output for GitHub Advanced Security and optional GitHub review comments
+- A Docker-based GitHub Action that keeps action inputs and API keys out of process arguments
+- A separate dependency-light JavaScript renderer with filtering, search, sorting, expandable context, and export
+- CI checks for tests, formatting, types, generated assets, container builds, Bandit severity gates, pip-audit, Trivy high/critical findings, and a scoped self-assessment
+
+## Run locally
+
+### Python package
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+# Windows Git Bash: source .venv/Scripts/activate
+pip install -e ".[dev]"
+pytest -q
+ruff check src tests
+ruff format --check src tests
+mypy src tests --ignore-missing-imports
+```
+
+### Renderer package
+
+```bash
+cd packages/guardrail-report-renderer
+npm ci
+npm test -- --runInBand
+npm run build
+```
+
+The build command synchronizes package assets into `docs/assets`. CI checks that the generated files are current.
+
+### Documentation site
+
+The site runs with Jekyll in Docker:
 
 ```bash
 cd docs
-
-# Option 1: Docker Compose (recommended on Windows)
 docker compose up --build
-
-# Option 2: Plain Docker
-docker build -t guardrail-docs .
-docker run --rm -p 4000:4000 -v "${PWD}:/srv/jekyll" guardrail-docs
-
-# Then open the URL printed by Jekyll, usually:
-# http://localhost:4000/ai-cicd-security-guardrail/
 ```
 
-## Usage
+Open `http://localhost:4000/ai-cicd-security-guardrail/`.
 
-```text
-guardrail <report-path> [options]
-```
-
-| Option | Description |
-|--------|-------------|
-| `--format` | `sarif`, `sonarqube`, or `cppcheck` (auto-detected if omitted). |
-| `--language` | Source language hint: `c`, `cpp`, `javascript`, `typescript`, `python`, `ruby`, `terraform`. |
-| `--repo-root` | Directory containing source files referenced by the report. |
-| `--provider` | LLM provider: `openai`, `anthropic`, `gemini`, or `mock`. |
-| `--output-json` | Path to write the JSON report. |
-| `--output-markdown` | Path to write the Markdown report. |
-| `--no-fail-on-unclear` | Do not fail the pipeline for UNCLEAR findings. |
-
-## GitHub Actions integration
-
-The repository runs quality checks, package tests, dependency/SAST checks, container scanning, and a real self-assessment on every push and pull request. The Pages workflow repeats the self-assessment while building the public Security Report tab.
+## GitHub Action
 
 ```yaml
-- name: AI Guardrail Triage
-  uses: ./
+- name: Triage SAST findings
+  uses: samueladegnan/ai-cicd-security-guardrail@main
   with:
     report-path: ./scan-results.sarif
     provider: mock
+    output-json: guardrail-report.json
     output-markdown: guardrail-report.md
 ```
 
-See `.github/workflows/guardrail.yml` and `docs/architecture.md` for more.
+For a real provider, pass the API key from a GitHub secret. The Docker entrypoint reads the runner-provided action inputs and exports runtime settings without adding secrets to the command line.
 
-## Project structure
+## Useful options
+
+| Option | Purpose |
+| --- | --- |
+| `--format` | `sarif`, `sonarqube`, or `cppcheck`. Otherwise the document is inspected. |
+| `--repo-root` | Root used to resolve source paths. Out-of-tree context is refused. |
+| `--provider` | `openai`, `anthropic`, `gemini`, or `mock`. |
+| `--output-json`, `--output-markdown`, `--output-sarif` | Write JSON, Markdown, or GitHub-compatible SARIF. |
+| `--fallback-providers` | Comma-separated fallback chain such as `anthropic,mock`. |
+| `--context-strategy` | `auto`, `line-window`, or `ast`. |
+| `--policy` | Rego policy evaluated by OPA. Missing, invalid, or incomplete decisions fail closed. |
+| `--no-fail-on-unclear` | Allow unclear results without changing the high-priority failure rule. |
+
+## Project map
 
 ```text
-.
-├── action.yml                      # Reusable GitHub Action metadata
-├── Dockerfile                      # Production-ready container
-├── examples/pipelines/Jenkinsfile  # Jenkins pipeline example
-├── pyproject.toml
-├── packages/                       # Reusable UI and ecosystem packages
-│   └── guardrail-report-renderer/  # npm package for the interactive triage dashboard
-├── sample_code/                    # Vulnerable and false-positive samples
-├── src/guardrail/
-│   ├── cli.py                      # CLI entry point
-│   ├── code_fetcher.py             # Backward-compatible context wrapper
-│   ├── compliance/                 # Compliance mappers (CERT, MISRA, FIPS, OWASP, CIS)
-│   ├── context.py                  # Pluggable source-context extractors
-│   ├── llm_client.py               # LLM provider abstraction
-│   ├── models.py                   # Pydantic models
-│   ├── parsers/                    # SARIF, SonarQube, cppcheck
-│   └── triage.py                   # Core triage engine
-└── tests/                          # Unit tests and fixtures
+src/guardrail/                 Python CLI and triage pipeline
+  parsers/                     SARIF, SonarQube, and cppcheck adapters
+  compliance/                  Framework and semantic mappings
+  llm/                         Provider clients and resilience controls
+  context.py                   Source-context strategies and path boundary
+  triage.py                    Enrichment, classification, caching, and reports
+  policy.py                    Built-in and OPA policy decisions
+packages/guardrail-report-renderer/  Reusable browser renderer
+sample_code/                   Intentionally vulnerable and benign C inputs
+docs/                          Jekyll site, demo, architecture, and report
+tests/                         Python tests and report fixtures
 ```
 
-## Architecture
+Read the [architecture notes](docs/architecture.md) for the data flow and extension points. The [security report](docs/security.md) explains the self-assessment scope. Low-severity Bandit findings are published for review, while medium and high findings fail CI before the Guardrail triage step.
 
-For a detailed architecture overview, data-flow diagram, and extensibility guide, see [`docs/architecture.md`](docs/architecture.md).
+## Security and privacy
 
-## Environment variables
+- The mock provider never sends source data to a network service
+- Real providers receive the finding and configured source context
+- Source paths are resolved beneath `--repo-root` before they are read
+- API keys come from environment variables or action secrets and are not written to reports
+- The container defaults to root for GitHub Actions compatibility. Local users can choose another UID and GID when their mounted workspace permits it
 
-| Variable | Purpose |
-|----------|---------|
-| `GUARDRAIL_LLM_PROVIDER` | `openai`, `anthropic`, `gemini`, or `mock`. |
-| `GUARDRAIL_LLM_API_KEY` | API key for the selected provider. |
-| `GUARDRAIL_LLM_MODEL` | Model name (e.g., `gpt-4o-mini`, `claude-3-5-sonnet-20240620`). |
-| `GUARDRAIL_MAX_CONCURRENCY` | Concurrent LLM requests (default: `3`). |
-| `GUARDRAIL_OUTPUT_JSON` | Default JSON output path. |
-| `GUARDRAIL_OUTPUT_MARKDOWN` | Default Markdown output path. |
+## Scope
 
-## Security & privacy
-
-- The **mock** provider runs entirely locally and sends no data to external services.
-- For real LLM providers, code snippets are sent to the configured API endpoint. Use a private/enterprise LLM endpoint where required by policy.
-- No API keys are hard-coded; all secrets are loaded from environment variables or CI secret stores.
-- The published Docker image runs as root so the GitHub Action can write reports back to the mounted workspace. For local use, you can run with an arbitrary non-root UID/GID using `--user $(id -u):$(id -g)` if your environment supports it.
-
-## Roadmap
-
-- [x] Vector-based semantic compliance mapping for unmapped SAST rules.
-- [x] Additional language-aware context extractors (function/class boundaries).
-- [x] SARIF output format for integration with GitHub Advanced Security.
-- [ ] Fine-tuned classification model for reduced LLM cost and latency.
-- [ ] Web dashboard for historical security score trends.
-
-## Advanced usage
-
-### Provider fallback and circuit breaker
-
-```bash
-guardrail tests/fixtures/sample.sarif \
-  --provider openai \
-  --fallback-providers anthropic,gemini,mock
-```
-
-### AST context extraction
-
-```bash
-guardrail tests/fixtures/sample.sarif \
-  --context-strategy ast \
-  --provider mock
-```
-
-### OPA/Rego policy-as-code
-
-```bash
-guardrail tests/fixtures/sample.sarif \
-  --policy examples/policy.rego \
-  --provider mock
-```
-
-### GitHub Advanced Security SARIF output
-
-```bash
-guardrail tests/fixtures/sample.sarif \
-  --output-sarif guardrail-results.sarif \
-  --provider mock
-```
-
-### Inline PR comments
-
-```yaml
-- uses: ./
-  with:
-    report-path: ./scan-results.sarif
-    provider: mock
-    pr-comment-mode: review
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    pr-number: ${{ github.event.pull_request.number }}
-    repository: ${{ github.repository }}
-```
-
-### Persistent SQLite cache
-
-```bash
-guardrail tests/fixtures/sample.sarif \
-  --cache-backend sqlite \
-  --cache-sqlite-path .guardrail-cache.db \
-  --provider mock
-```
-
-### Semantic compliance mapping
-
-```bash
-guardrail tests/fixtures/sample.sarif \
-  --semantic-compliance \
-  --vector-store-path .guardrail-vectors.db \
-  --provider mock
-```
-
-## AI-assisted development
-
-This project was built with AI assistance. AI tools supported exploration, implementation, documentation, and testing, while the project direction, decisions, review, and final responsibility remain with the maintainer.
+This is a focused triage layer, not a replacement for a SAST engine, a proof of exploitability, or a guarantee that a repository is secure. Teams should validate provider behavior, policy rules, and false-positive rates against their own findings.
 
 ## License
 
-This project is released under the MIT License. See [LICENSE](./LICENSE) for details.
+MIT. See [LICENSE](LICENSE).
 
----
-
-*Maintained by Sam Degnan as a practical example of secure Python engineering, CI/CD automation, and explainable security tooling.*
+Maintained by [Sam Degnan](https://github.com/samueladegnan).

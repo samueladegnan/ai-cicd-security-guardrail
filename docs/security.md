@@ -8,10 +8,10 @@ wide: true
 
 <div class="security-report-page">
   <div class="security-report-header">
-    <div class="report-status-label"><span class="status-dot" aria-hidden="true"></span> Live <code>src/</code> self-assessment</div>
+    <div class="report-status-label"><span class="status-dot" aria-hidden="true"></span> Scoped <code>src/</code> self-assessment</div>
     <h1>Security Report</h1>
     <p class="security-report-lead">
-      This page shows the latest report produced by running Bandit and Guardrail against this repository's <code>src/</code> tree. Results are published as part of the documentation build and should be treated as an automated review aid, not a substitute for engineering judgment.
+      This page publishes the latest Bandit and Guardrail report for this repository's <code>src/</code> tree. It is an automated review aid with a defined scope. It is not a full security audit.
     </p>
     <dl class="security-report-details">
       <div>
@@ -20,7 +20,7 @@ wide: true
       </div>
       <div>
         <dt>Triage provider</dt>
-        <dd>Deterministic mock provider; source stays in CI</dd>
+        <dd>Deterministic local mock</dd>
       </div>
       <div>
         <dt>Report scope</dt>
@@ -33,44 +33,43 @@ wide: true
   </div>
 
   <div class="report-disclaimer" role="note">
-    <strong>How to read this report:</strong> these are automated triage results, not a guarantee that the repository is vulnerability-free.
-    Findings should be verified by an engineer before being accepted or dismissed.
+    <strong>How to read this report:</strong> these are automated triage results, not a guarantee that the repository is vulnerability free. Verify findings with an engineer before accepting or dismissing them.
   </div>
 
-  <div id="security-live-success" class="live-scan-success" role="status" style="display: none;">
-    <div class="live-scan-success__label">Live scan complete</div>
-    <h2>The real Guardrail scan found no issues</h2>
+  <div id="security-live-success" class="live-scan-success" role="status" style="display: none">
+    <div class="live-scan-success__label">Scoped scan complete</div>
+    <h2>No findings in the scoped self-assessment</h2>
     <p>
-      The latest GitHub Actions self-assessment scanned this repository's <code>src/</code> tree and returned zero findings. To keep this page useful, the dashboard below uses clearly labeled example data. Those example findings are not issues in this repository.
+      The latest Pages build scanned this repository's <code>src/</code> tree and returned zero findings. The dashboard below is synthetic so the renderer remains inspectable. It does not represent issues in this repository.
     </p>
   </div>
 
-  <div id="security-live-findings" class="live-scan-findings" role="status" style="display: none;">
-    <div class="live-scan-findings__label">Live findings</div>
-    <h2>Findings from the real Guardrail scan</h2>
+  <div id="security-live-findings" class="live-scan-findings" role="status" style="display: none">
+    <div class="live-scan-findings__label">Scoped scan findings</div>
+    <h2>Findings from the self-assessment</h2>
     <p>
-      The latest GitHub Actions self-assessment found findings in this repository's <code>src/</code> tree. The dashboard below shows those real scan results for review.
+      The latest Pages build returned findings in this repository's <code>src/</code> tree. The dashboard below shows those results for review.
     </p>
   </div>
 
-  <div id="security-example-notice" class="example-report-notice" role="status" style="display: none;">
-    <div id="security-example-label" class="example-report-notice__label">Example report · live scan unavailable</div>
+  <div id="security-example-notice" class="example-report-notice" role="status" style="display: none">
+    <div id="security-example-label" class="example-report-notice__label">Synthetic dashboard</div>
     <h2 id="security-example-title">Illustrative findings are shown below</h2>
     <p id="security-example-copy">
-      The live CI report is not available in this build, so this page is showing a committed synthetic report to demonstrate the dashboard. Every finding below is sample data and is <strong>not a real issue in this repository</strong>.
+      The scoped self-assessment is unavailable in this build. This page is showing committed synthetic data to demonstrate the dashboard. Every finding below is example data, not a repository issue.
     </p>
   </div>
 
-  <div id="security-empty" class="empty-state" style="display: none;">
-    <span class="empty-icon" aria-hidden="true">⏳</span>
-    <h2 id="security-empty-title">Live report pending</h2>
+  <div id="security-empty" class="empty-state" style="display: none">
+    <span class="empty-icon" aria-hidden="true">⌛</span>
+    <h2 id="security-empty-title">Report pending</h2>
     <p id="security-empty-copy">
-      The latest CI report could not be loaded. The next Pages build will publish it. In the meantime, explore the
-      <a href="{{ '/demo/' | relative_url }}">illustrative browser demo</a> with clearly labeled sample reports.
+      The latest CI report could not be loaded. The next Pages build will publish it. You can still explore the
+      <a href="{{ '/demo/' | relative_url }}">browser demo</a> with clearly labeled synthetic reports.
     </p>
   </div>
 
-  <div id="security-dashboard" style="display: none;"></div>
+  <div id="security-dashboard" style="display: none"></div>
 </div>
 
 <script>

@@ -1,4 +1,4 @@
-# AI-Driven CI/CD Security Guardrail
+# AI Guardrail container
 # Multi-stage build keeps the runtime image small.
 
 FROM python:3.12-slim AS builder
@@ -15,12 +15,13 @@ ENV PATH="/opt/guardrail-venv/bin:$PATH"
 # Copy project metadata and source, then install
 COPY requirements.txt pyproject.toml README.md ./
 COPY src ./src
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN pip install --no-cache-dir .
 
 FROM python:3.12-slim AS runtime
 
-LABEL org.opencontainers.image.title="AI-Driven CI/CD Security Guardrail"
-LABEL org.opencontainers.image.description="AI-Driven CI/CD Guardrail for context-aware secure coding across languages"
+LABEL org.opencontainers.image.title="AI Guardrail"
+LABEL org.opencontainers.image.description="Static-analysis triage with explainable CI decisions"
 LABEL org.opencontainers.image.authors="Sam Degnan <samueladegnan@gmail.com>"
 LABEL org.opencontainers.image.source="https://github.com/samueladegnan/ai-cicd-security-guardrail"
 LABEL org.opencontainers.image.licenses="MIT"
@@ -37,5 +38,8 @@ ENV PATH="/opt/guardrail-venv/bin:$PATH"
 
 # GitHub Actions Docker actions run as root by default. Keep root as the
 # default user so output files can be written back to the mounted workspace.
-ENTRYPOINT ["guardrail"]
+COPY --from=builder /app/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod 0755 /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["--help"]

@@ -1,4 +1,4 @@
-"""Command-line interface for the AI-Driven CI/CD Security Guardrail."""
+"""Command-line interface for static-analysis triage."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from guardrail.triage import TriageEngine, should_fail
 
 def _build_markdown(report: Report) -> str:
     lines = [
-        "# AI-Driven CI/CD Security Guardrail Report\n",
+        "# AI Guardrail Report\n",
         "## Summary\n",
         f"- **Total findings triaged:** {report.summary.total}\n",
         f"- **High-priority security risks:** {report.summary.high_priority}\n",
@@ -51,7 +51,7 @@ logger = get_logger(__name__)
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="guardrail",
-        description="AI-driven triage of static-analysis findings across languages.",
+        description="Triage static-analysis findings with source context and policy-aware CI results.",
     )
     parser.add_argument(
         "report_path",

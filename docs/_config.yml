@@ -1,9 +1,9 @@
 # Jekyll configuration for the AI Guardrail project site.
 repository: samueladegnan/ai-cicd-security-guardrail
 repository_url: https://github.com/samueladegnan/ai-cicd-security-guardrail
-title: "AI Guardrail | Context-aware SAST triage"
+title: "AI Guardrail | SAST triage in CI"
 brand: "AI Guardrail"
-description: "A Python CLI and GitHub Action that turns noisy static-analysis findings into prioritized, explainable security decisions."
+description: "A Python CLI and GitHub Action that turns static-analysis findings into explainable CI decisions."
 logo: "/assets/favicon.svg"
 lang: en-US
 author:

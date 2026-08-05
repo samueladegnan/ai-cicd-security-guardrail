@@ -1,5 +1,5 @@
 module.exports = {
-  // Hardcoded API key for demo purposes.
-  API_KEY: 'sk-live-1234567890abcdef',
-  API_URL: 'https://api.example.com',
+  // Placeholder credential used only to demonstrate a hardcoded-secret finding.
+  API_KEY: 'demo-placeholder-not-a-secret',
+  API_URL: 'https://example.invalid',
 };

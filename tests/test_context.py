@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from guardrail.context import (
     CContextExtractor,
     ContextRegistry,
@@ -38,6 +40,32 @@ def test_line_window_extractor_reads_python_file(tmp_path):
 def test_line_window_extractor_refuses_out_of_tree(tmp_path):
     extractor = LineWindowContextExtractor()
     ctx = extractor.extract("/etc/passwd", 1, repo_root=str(tmp_path))
+    assert "out-of-tree" in ctx.snippet
+
+
+def test_line_window_extractor_refuses_relative_traversal(tmp_path):
+    extractor = LineWindowContextExtractor()
+    ctx = extractor.extract("../../../outside.py", 1, repo_root=str(tmp_path))
+    assert "out-of-tree" in ctx.snippet
+
+
+def test_line_window_extractor_refuses_binary_extension(tmp_path):
+    binary = tmp_path / "payload.exe"
+    binary.write_bytes(b"not source")
+    ctx = LineWindowContextExtractor().extract("payload.exe", 1, repo_root=str(tmp_path))
+    assert "Refusing to read binary file" in ctx.snippet
+
+
+def test_line_window_extractor_refuses_symlink_escape(tmp_path):
+    outside = tmp_path.parent / "outside.py"
+    outside.write_text("secret = True\n", encoding="utf-8")
+    link = tmp_path / "linked.py"
+    try:
+        link.symlink_to(outside)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks are unavailable on this platform")
+
+    ctx = LineWindowContextExtractor().extract("linked.py", 1, repo_root=str(tmp_path))
     assert "out-of-tree" in ctx.snippet
 
 

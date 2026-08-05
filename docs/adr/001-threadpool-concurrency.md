@@ -16,5 +16,5 @@ We use `ThreadPoolExecutor` with a configurable `max_workers` value.
 
 - **Simpler integration with synchronous HTTP clients.** The project uses `requests` for all LLM providers. Wrapping every client in async scaffolding would add complexity without improving throughput for a small number of findings.
 - **Bounded concurrency.** `ThreadPoolExecutor` gives us explicit control over the number of simultaneous LLM calls, avoiding accidental provider rate-limit violations.
-- **Blocking I/O is acceptable.** Each LLM call is network-bound; the GIL is released during I/O, so threads are not a bottleneck for this workload.
+- **Blocking I/O is acceptable.** Each LLM call is network-bound. The GIL is released during I/O, so threads are not a bottleneck for this workload.
 - **Future option.** If throughput becomes a concern, we can replace the executor with an small `asyncio` layer that reuses the same provider logic.

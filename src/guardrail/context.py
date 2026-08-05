@@ -7,7 +7,6 @@ extension.  The default strategy is a safe, language-agnostic line window.
 
 from __future__ import annotations
 
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -87,10 +86,8 @@ class TreeSitterContextExtractor(ContextExtractor):
         except ImportError:
             return self._fallback.extract(file_path, line, repo_root, before, after)
 
-        import os as _os
-
-        full_path = Path(_os.path.abspath(_os.path.join(repo_root, file_path)))
-        repo_abs = Path(_os.path.abspath(repo_root))
+        repo_abs = Path(repo_root).resolve()
+        full_path = (repo_abs / file_path).resolve()
         try:
             full_path.relative_to(repo_abs)
         except ValueError:
@@ -220,8 +217,8 @@ class LineWindowContextExtractor(ContextExtractor):
         before: int = 4,
         after: int = 4,
     ) -> CodeContext:
-        full_path = Path(os.path.abspath(os.path.join(repo_root, file_path)))
-        repo_abs = Path(os.path.abspath(repo_root))
+        repo_abs = Path(repo_root).resolve()
+        full_path = (repo_abs / file_path).resolve()
 
         # Refuse to read paths outside the repo root before checking existence.
         try:

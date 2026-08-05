@@ -1,59 +1,59 @@
 ---
 title: Architecture | AI Guardrail
-description: Explore the AI Guardrail data flow, extension points, compliance mapping, and CI/CD integration design.
+description: The data flow, boundaries, and tradeoffs behind AI Guardrail.
 permalink: /architecture/
 ---
 
-# AI Guardrail: Architecture
+# Architecture
 
-## Goals
+AI Guardrail sits between a static-analysis report and a CI decision. It does not scan source code itself. It normalizes findings, adds the context needed to review them, and makes the resulting decision easy to inspect.
 
-- Reduce false-positive fatigue from static-analysis tools in CI/CD.
-- Map every finding to one or more compliance controls.
-- Use an LLM to classify findings as a **high-priority security risk**, a **false positive**, or **unclear**.
-- Provide a reusable Docker container and native CI/CD integrations for GitHub Actions and Jenkins.
-- Stay extensible: new languages, parsers, and compliance frameworks are simple to add.
-
-## High-level data flow
+## Data flow
 
 ![AI Guardrail data flow](../assets/architecture.svg)
 
-1. **Ingest:** Parse SARIF, SonarQube JSON, or cppcheck XML into normalized `Finding` objects.
-2. **Enrich:** For each finding, the triage engine fetches source context (line-window or Tree-sitter AST) and compliance controls (hardcoded rules or RAG embeddings).
-3. **Classify:** The LLM client scores the enriched finding, with provider fallback and circuit-breaker protection.
-4. **Report:** The CLI aggregates results, writes JSON/Markdown/SARIF, and returns a CI-friendly exit code or posts inline PR comments.
-5. **Govern:** An optional OPA/Rego policy decides whether the pipeline is allowed to pass.
+1. **Parse** SARIF, SonarQube JSON, or cppcheck XML into typed `Finding` objects
+2. **Enrich** each finding with a bounded line window or optional Tree-sitter scope
+3. **Map** CWEs and rules to configured compliance frameworks
+4. **Classify** with a provider, bounded concurrency, retry handling, fallback, and circuit breakers
+5. **Report** JSON, Markdown, SARIF, or GitHub review comments
+6. **Gate** the build with built-in logic or an OPA/Rego policy
 
-## Component responsibilities
+## Component boundaries
 
 | Component | Responsibility |
-|-----------|----------------|
-| `guardrail/parsers/` | Convert SARIF, SonarQube JSON, and cppcheck XML into `Finding` models. Each parser is a class that declares its tool name and supported languages. |
-| `guardrail/context.py` | Pluggable source-context extraction. A registry resolves the right `ContextExtractor` from language or file extension. The default strategy is a safe line window; an optional Tree-sitter extractor returns enclosing functions or classes. |
-| `guardrail/compliance/` | Pluggable compliance mapping. A registry of `ComplianceMapper` implementations covers CERT C, MISRA C:2012, FIPS, OWASP Top 10, CWE, and CIS AWS. Optional semantic mapping uses vector embeddings for unmapped rules. |
-| `guardrail/llm_client.py` | Provider-agnostic LLM client. Supports OpenAI, Anthropic, Gemini, and a deterministic mock, with multi-provider fallback and circuit breakers. |
-| `guardrail/cache.py` | In-memory and persistent SQLite caches keyed by a stable hash of the finding and its compliance context. |
-| `guardrail/policy.py` | Optional Open Policy Agent (OPA/Rego) evaluation of triage reports. |
-| `guardrail/reporters/` | GitHub PR review comments and GitHub Advanced Security SARIF output. |
-| `guardrail/triage.py` | Orchestrates enrichment, compliance mapping, LLM classification, caching, and policy evaluation. |
-| `guardrail/cli.py` | Command-line entry point and report formatting. |
-| `Dockerfile` / `action.yml` | Reusable container and GitHub Action definitions. |
+| --- | --- |
+| `guardrail/parsers/` | Convert supported report formats into `Finding` models |
+| `guardrail/context.py` | Resolve source context beneath `repo_root` with line-window and optional AST strategies |
+| `guardrail/compliance/` | Map CWEs and rules to CERT C, MISRA C, FIPS, OWASP, CWE, and CIS AWS controls |
+| `guardrail/llm/` | Keep provider clients behind one interface with fallback and circuit-breaker behavior |
+| `code_fetcher.py` and `llm_client.py` | Compatibility shims for older imports. New code uses `context.py` and `guardrail.llm` directly |
+| `guardrail/cache.py` | Cache triage results in memory or SQLite using a stable finding key |
+| `guardrail/policy.py` | Evaluate reports with built-in rules or OPA/Rego and fail closed on policy errors |
+| `guardrail/reporters/` | Write SARIF and optional GitHub PR comments |
+| `guardrail/triage.py` | Orchestrate enrichment, mapping, classification, caching, and report assembly |
+| `guardrail/cli.py` | Expose the workflow as a command line tool |
+| `Dockerfile` and `action.yml` | Package the workflow as a reusable GitHub Action |
 
-## Language support
+## Source boundary
 
-The guardrail can support many languages. The `language` field on each `Finding` is inferred from the report metadata or file extension. You can also override it with the `--language` CLI flag or the `language` action input.
+The context extractor resolves both the repository root and the requested path before reading a file. It refuses paths outside the root, including symlink escapes, and skips known binary and archive extensions. This protects the provider prompt from accidentally including unrelated local files.
 
-Current language handling:
+## Provider boundary
 
-- **C/C++**: CERT C, MISRA C, FIPS controls.
-- **JavaScript / TypeScript**: OWASP Top 10 and CWE.
-- **Ruby**: OWASP Top 10 and CWE.
-- **Python**: OWASP Top 10 and CWE.
-- **Terraform / HCL**: CIS AWS and CWE.
-- **Other / unknown**: generic line-window context extraction and OWASP/CWE mapping.
+The mock provider runs locally and is deterministic. Real providers receive the finding and configured source context. That is an explicit data-handling decision, so deployments should use an approved endpoint and policy for sensitive repositories.
 
-## Security and privacy
+## Policy boundary
 
-- Source code snippets are sent to the configured LLM endpoint only when a real provider is selected.
-- The mock provider runs locally and never leaves the container.
-- For real providers, follow your organization's data-handling policy. Consider an enterprise LLM gateway or private endpoint.
+The built-in policy fails a run when high-priority findings remain and can also fail on unclear findings. An OPA policy can replace that decision. Missing OPA, invalid Rego, malformed output, and non-boolean decisions all fail closed.
+
+## Language handling
+
+Language is inferred from report metadata or file extension and can be overridden by the CLI or action input. Current context and mapping paths cover C and C++, JavaScript and TypeScript, Ruby, Python, Terraform, and generic unknown files.
+
+## Tradeoffs
+
+- A line window is the default because it works across languages and has a small dependency footprint
+- Tree-sitter is optional because AST grammars add installation and runtime complexity
+- The mock provider is intentionally simple. It exists for deterministic tests and demos, not as a claim of production classification accuracy
+- Compliance mappings are explicit and inspectable. Semantic mapping is optional because embeddings add cost and another operational dependency

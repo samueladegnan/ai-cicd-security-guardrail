@@ -86,9 +86,9 @@ with a nested `finding` object) or a flat/normalized shape.
 
 ## API
 
-- `render(report)` — render or update the dashboard with new report data.
-- `setVerdictFilter(verdict, toggle)` — programmatically filter by verdict.
-- `destroy()` — remove the dashboard and clean up the Chart.js instance.
+- `render(report)`: render or update the dashboard with new report data
+- `setVerdictFilter(verdict, toggle)`: programmatically filter by verdict
+- `destroy()`: remove the dashboard and clean up the Chart.js instance
 
 ## Development
 

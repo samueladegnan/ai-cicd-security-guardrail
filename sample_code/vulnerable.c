@@ -1,8 +1,8 @@
 /*
  * vulnerable.c
  *
- * Intentionally insecure C code for demonstrating the AI-Driven
- * CI/CD Security Guardrail.  Do not use in production.
+ * Intentionally insecure C code for demonstrating the
+ * CI/CD security triage pipeline.  Do not use in production.
  */
 #include <stdio.h>
 #include <string.h>

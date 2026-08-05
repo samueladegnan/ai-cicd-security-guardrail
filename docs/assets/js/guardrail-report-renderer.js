@@ -1,7 +1,7 @@
 /* AUTO-GENERATED from packages/guardrail-report-renderer/src/index.js — do not edit directly. */
 
 /**
- * GuardrailReportRenderer — Reusable report dashboard
+ * GuardrailReportRenderer: reusable report dashboard
  *
  * A vanilla-JS component that renders a guardrail triage report as an
  * interactive dashboard: summary counts, Chart.js doughnut, filter/sort
@@ -144,7 +144,7 @@
               </div>
               <div class="search-group">
                 <label for="${this.id}-search" class="sr-only">Search findings</label>
-                <input type="search" id="${this.id}-search" placeholder="Search rule, CWE, file, or message…" />
+                <input type="search" id="${this.id}-search" placeholder="Search rule, CWE, file, or message" />
               </div>
               <div class="sort-group">
                 <label for="${this.id}-sort" class="sr-only">Sort by</label>
@@ -424,7 +424,7 @@
         const detailRow = document.createElement("tr");
         detailRow.className = "detail-row";
         const langClass = languageFromPath(item.filePath);
-        const locationText = `${escapeHtml(item.filePath || "-")} — line ${item.line || "-"}${item.column ? ":" + item.column : ""}`;
+        const locationText = `${escapeHtml(item.filePath || "-")} at line ${item.line || "-"}${item.column ? ":" + item.column : ""}`;
         const verdictLabel = item.verdict === "HIGH_PRIORITY" ? "High Priority" : item.verdict === "FALSE_POSITIVE" ? "False Positive" : "Unclear";
         detailRow.innerHTML = `
           <td colspan="5">
@@ -432,7 +432,7 @@
               <div class="detail-header">
                 <div>
                   <h4 class="detail-location">${locationText}</h4>
-                  <p class="detail-rule"><code>${escapeHtml(String(item.ruleId))}</code> · ${escapeHtml(item.cwe || "No CWE")}</p>
+                  <p class="detail-rule"><code>${escapeHtml(String(item.ruleId))}</code> | ${escapeHtml(item.cwe || "No CWE")}</p>
                 </div>
                 <button type="button" class="detail-close" aria-label="Close details">Close</button>
               </div>

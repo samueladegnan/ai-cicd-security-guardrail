@@ -2,16 +2,18 @@
 
 The guardrail can evaluate the generated report against a user-supplied
 Rego policy. This decouples security policy from application logic and lets
-teamss express rules like:
+teams express rules like:
+
+    package guardrail
 
     default allow = false
-    allow {
-        count(input.high_priority) == 0
-        input.confidence < 0.9
+
+    allow if {
+        input.summary.high_priority == 0
     }
 
-If OPA is not installed, the guardrail falls back to the built-in decision
-logic in ``should_fail``.
+If OPA is not installed, a configured policy is treated as a failed check;
+security policy must not silently fail open.
 """
 
 from __future__ import annotations
@@ -35,7 +37,8 @@ class PolicyEngine:
 
     def available(self) -> bool:
         """Return True if OPA is installed and a policy path is configured."""
-        return bool(self.policy_path) and bool(shutil.which("opa"))
+        policy_path = self.policy_path
+        return policy_path is not None and Path(policy_path).is_file() and bool(shutil.which("opa"))
 
     def evaluate(self, report: Report, settings: Settings | None = None) -> dict[str, Any]:
         """Return OPA's decision as a dict.
@@ -52,8 +55,8 @@ class PolicyEngine:
         if self.policy_path is None:
             return {"allow": False, "reason": "Policy path is not configured."}
         policy_path = Path(self.policy_path)
-        if not policy_path.exists():
-            return {"allow": True, "reason": f"Policy path not found: {self.policy_path}"}
+        if not policy_path.is_file():
+            return {"allow": False, "reason": f"Policy file not found: {self.policy_path}"}
 
         input_data = self._build_input(report, settings)
         input_json = json.dumps(input_data)
@@ -66,13 +69,12 @@ class PolicyEngine:
             cmd = [
                 "opa",
                 "eval",
+                "--format=json",
                 "--data",
                 str(policy_path),
                 "--input",
                 tmp_path,
-                "data.guardrail.allow",
-                "data.guardrail.reason",
-                "data.guardrail.violations",
+                "data.guardrail",
             ]
             result = subprocess.run(
                 cmd,
@@ -116,22 +118,41 @@ class PolicyEngine:
         }
 
     def _normalize(self, opa_result: dict[str, Any]) -> dict[str, Any]:
-        """Normalize OPA's result format into a simple dict."""
-        allow = self._extract_bool(opa_result, "data.guardrail.allow")
-        reason = self._extract_str(opa_result, "data.guardrail.reason")
-        violations = self._extract_list(opa_result, "data.guardrail.violations")
+        """Normalize OPA's JSON result into a simple decision dict."""
+        value = self._expression_value(opa_result)
+        if isinstance(value, dict):
+            allow = value.get("allow")
+            return {
+                "allow": allow if isinstance(allow, bool) else False,
+                "reason": str(value.get("reason", "")),
+                "violations": self._as_list(value.get("violations", [])),
+            }
+        # Retain compatibility with older mocked OPA output in integrations.
         return {
-            "allow": allow,
-            "reason": reason,
-            "violations": violations,
+            "allow": self._extract_bool(opa_result, "data.guardrail.allow"),
+            "reason": self._extract_str(opa_result, "data.guardrail.reason"),
+            "violations": self._extract_list(opa_result, "data.guardrail.violations"),
         }
+
+    @staticmethod
+    def _expression_value(opa_result: dict[str, Any]) -> Any:
+        results = opa_result.get("result", [])
+        if not results:
+            return None
+        expressions = results[0].get("expressions", [])
+        return expressions[0].get("value") if expressions else None
+
+    @staticmethod
+    def _as_list(value: Any) -> list[Any]:
+        return list(value) if isinstance(value, (list, tuple)) else []
 
     @staticmethod
     def _extract_bool(opa_result: dict[str, Any], key: str) -> bool:
         value = opa_result.get("result", [])
         for item in value:
             if item.get("path") == key:
-                return bool(item.get("value", False))
+                value = item.get("value")
+                return value if isinstance(value, bool) else False
         return False
 
     @staticmethod

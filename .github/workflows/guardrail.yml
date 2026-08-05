@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 env:
   PYTHON_VERSION: "3.12"
@@ -65,6 +64,10 @@ jobs:
         working-directory: packages/guardrail-report-renderer
         run: npm ci
 
+      - name: Run JavaScript dependency audit
+        working-directory: packages/guardrail-report-renderer
+        run: npm audit --audit-level=high
+
       - name: Run JS unit tests
         working-directory: packages/guardrail-report-renderer
         run: npm test
@@ -78,6 +81,27 @@ jobs:
             git status --short ../../docs/assets/js/guardrail-report-renderer.js ../../docs/assets/css/guardrail-report.css >&2
             exit 1
           fi
+
+      - name: Install Playwright browsers
+        working-directory: packages/guardrail-report-renderer
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser demo E2E tests
+        working-directory: packages/guardrail-report-renderer
+        run: |
+          trap 'docker compose -f ../../docs/docker-compose.yml down --remove-orphans' EXIT
+          docker compose -f ../../docs/docker-compose.yml up --detach --build
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:4000/ai-cicd-security-guardrail/demo/ >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              echo "The docs server did not become ready" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          npm run test:e2e -- --workers=1
 
   sast:
     name: Python SAST
@@ -102,13 +126,21 @@ jobs:
           pip install bandit[toml] pip-audit
 
       - name: Run Bandit security linter
-        # Produce a report; let the CI stay green so the portfolio stays
-        # accessible, but the artifact is available for review.
-        continue-on-error: true
-        run: bandit -r src -f json -o bandit-report.json -ll
+        run: |
+          set +e
+          bandit -r src -f json -o bandit-report.json -ll
+          exit_code=$?
+          set -e
+          if [ "$exit_code" -gt 1 ]; then
+            echo "Bandit failed with unexpected exit code $exit_code" >&2
+            exit "$exit_code"
+          fi
+          if [ "$exit_code" -eq 1 ]; then
+            echo "Bandit found medium or high severity findings" >&2
+            exit 1
+          fi
 
       - name: Run pip-audit dependency check
-        continue-on-error: true
         run: pip-audit --desc --format=json --output=pip-audit-report.json --requirement=requirements.txt
 
       - name: Upload Bandit report
@@ -189,10 +221,11 @@ jobs:
           image-ref: ai-cicd-security-guardrail:trivy
           format: sarif
           output: trivy-report.sarif
-          exit-code: '0'
-          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+          exit-code: '1'
 
       - name: Upload Trivy report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report
@@ -232,6 +265,24 @@ jobs:
             exit "$exit_code"
           fi
           test -s bandit-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("bandit-report.json").read_text())
+          blocking = [
+              result for result in report.get("results", [])
+              if result.get("issue_severity", "").upper() in {"HIGH", "MEDIUM"}
+          ]
+          if blocking:
+              for result in blocking:
+                  print(
+                      f"Blocking Bandit finding: {result.get('test_id')} "
+                      f"{result.get('issue_severity')} {result.get('filename')}"
+                  )
+              raise SystemExit(1)
+          print(f"Bandit severity gate passed with {len(report.get('results', []))} low finding(s)")
+          PY
           python scripts/bandit_to_sarif.py bandit-report.json bandit-report.sarif
           test -s bandit-report.sarif
 
@@ -241,12 +292,13 @@ jobs:
           guardrail bandit-report.sarif \
             --repo-root . \
             --provider mock \
+            --no-fail-on-unclear \
             --output-json guardrail-report.json \
             --output-markdown guardrail-report.md
           exit_code=$?
           set -e
-          if [ "$exit_code" -gt 1 ]; then
-            echo "Guardrail failed with unexpected exit code $exit_code" >&2
+          if [ "$exit_code" -ne 0 ]; then
+            echo "Guardrail self-assessment failed with exit code $exit_code" >&2
             exit "$exit_code"
           fi
 

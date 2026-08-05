@@ -93,10 +93,7 @@ class GeminiClient(LLMClient):
                 "Gemini API key is required. Set GEMINI_API_KEY or GUARDRAIL_LLM_API_KEY."
             )
         model = self.settings.effective_model
-        url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{model}:generateContent?key={api_key}"
-        )
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         payload: dict[str, Any] = {
             "contents": [
                 {
@@ -108,7 +105,7 @@ class GeminiClient(LLMClient):
             ],
             "generationConfig": {"temperature": 0.1, "maxOutputTokens": 1024},
         }
-        headers = {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json", "x-goog-api-key": api_key}
         resp = requests.post(
             url, headers=headers, json=payload, timeout=self.settings.timeout_seconds
         )

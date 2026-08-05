@@ -53,6 +53,10 @@ inputs:
     description: Cache backend (memory or sqlite).
     required: false
     default: "memory"
+  cache-sqlite-path:
+    description: Path to the SQLite cache database.
+    required: false
+    default: .guardrail-cache.db
   policy:
     description: Path to an OPA/Rego policy file.
     required: false
@@ -73,6 +77,10 @@ inputs:
     description: Pull request number for PR comments.
     required: false
     default: ""
+  repository:
+    description: GitHub repository in owner/repo format for PR comments.
+    required: false
+    default: ""
   commit-sha:
     description: Commit SHA to associate with PR review comments.
     required: false
@@ -81,43 +89,17 @@ inputs:
     description: Enable RAG-based semantic compliance mapping.
     required: false
     default: "false"
+  vector-store-path:
+    description: Path to the semantic compliance vector store.
+    required: false
+    default: .guardrail-vectors.db
   context-strategy:
     description: Context extraction strategy (auto, line-window, ast).
     required: false
-    default: "auto"
+    default: auto
 
 runs:
   using: docker
   image: Dockerfile
-  env:
-    GUARDRAIL_LLM_PROVIDER: ${{ inputs.provider }}
-    GUARDRAIL_LLM_API_KEY: ${{ inputs.llm-api-key }}
-    GUARDRAIL_LLM_MODEL: ${{ inputs.llm-model }}
-    GUARDRAIL_FALLBACK_PROVIDERS: ${{ inputs.fallback-providers }}
-    GUARDRAIL_MAX_CONCURRENCY: ${{ inputs.max-concurrency }}
-    GUARDRAIL_FAIL_ON_UNCLEAR: ${{ inputs.fail-on-unclear }}
-    GUARDRAIL_CACHE_BACKEND: ${{ inputs.cache-backend }}
-    GUARDRAIL_POLICY_PATH: ${{ inputs.policy }}
-    GUARDRAIL_OUTPUT_JSON: ${{ inputs.output-json }}
-    GUARDRAIL_OUTPUT_MARKDOWN: ${{ inputs.output-markdown }}
-    GUARDRAIL_OUTPUT_SARIF: ${{ inputs.output-sarif }}
-    GUARDRAIL_PR_COMMENT_MODE: ${{ inputs.pr-comment-mode }}
-    GUARDRAIL_GITHUB_TOKEN: ${{ inputs.github-token }}
-    GUARDRAIL_PR_NUMBER: ${{ inputs.pr-number }}
-    GUARDRAIL_COMMIT_SHA: ${{ inputs.commit-sha }}
-    GUARDRAIL_SEMANTIC_COMPLIANCE: ${{ inputs.semantic-compliance }}
-    GUARDRAIL_CONTEXT_STRATEGY: ${{ inputs.context-strategy }}
   args:
     - ${{ inputs.report-path }}
-    - --repo-root
-    - ${{ inputs.repo-root }}
-    - --provider
-    - ${{ inputs.provider }}
-    - --max-concurrency
-    - ${{ inputs.max-concurrency }}
-    - --format
-    - ${{ inputs.format }}
-    - --language
-    - ${{ inputs.language }}
-    - --context-strategy
-    - ${{ inputs.context-strategy }}

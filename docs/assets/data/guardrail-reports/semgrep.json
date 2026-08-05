@@ -94,7 +94,7 @@
         "line": 5,
         "column": 20,
         "severity": "HIGH",
-        "code_snippet": "   1 module.exports = {\n   2   // Hardcoded API key for demo purposes.\n   3   API_KEY: 'sk-live-1234567890abcdef',\n   4   API_URL: 'https://api.example.com',\n   5 };",
+        "code_snippet": "   1 module.exports = {\n   2   // Hardcoded API key for demo purposes.\n   3   API_KEY: 'demo-placeholder-not-a-secret',\n   4   API_URL: 'https://example.invalid',\n   5 };",
         "cwe": null,
         "tool": "sarif",
         "language": "javascript",

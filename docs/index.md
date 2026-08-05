@@ -1,51 +1,51 @@
 ---
-title: AI Guardrail | Context-aware SAST triage
-description: A Python CLI and GitHub Action that turns noisy static-analysis findings into prioritized, explainable security decisions.
+title: AI Guardrail | SAST triage in CI
+description: A Python CLI and GitHub Action that turns static-analysis findings into explainable CI decisions.
 permalink: /
 ---
 
-[![CI](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml/badge.svg)](https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div class="project-badges" aria-label="Project status">
+  <a href="https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml"><img src="https://github.com/samueladegnan/ai-cicd-security-guardrail/actions/workflows/guardrail.yml/badge.svg" alt="CI status"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python 3.10 or newer"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License"></a>
+</div>
 
 ## The problem
 
-Static-analysis tools are good at finding possibilities and bad at telling a team what deserves attention first. A long warning list still leaves engineers doing the expensive work: opening the source file, checking the surrounding code, mapping the issue to a control, and deciding whether the build should stop.
+Static-analysis tools produce useful signals, but a long report still leaves engineers doing the expensive work. They open the source file, inspect surrounding code, map the issue to a control, and decide whether CI should stop.
 
-AI Guardrail is the triage layer for that workflow. It reads SARIF, SonarQube JSON, and cppcheck XML, adds source context and compliance mappings, and returns an explainable verdict: **high priority**, **false positive**, or **unclear**.
+AI Guardrail is a small decision layer for that workflow. It reads SARIF, SonarQube JSON, and cppcheck XML, adds bounded source context, maps known controls, and returns one of three explicit outcomes: high priority, false positive, or unclear.
 
-## How it works
+## What happens to the data
 
-1. **Parse** supported SAST formats into normalized findings.
-2. **Enrich** each finding with a safe line window or optional Tree-sitter context.
-3. **Map** CWEs to CERT C, MISRA C, FIPS, OWASP, and CIS AWS controls.
-4. **Classify** with OpenAI, Anthropic, Gemini, or a deterministic local mock provider.
-5. **Report** JSON, Markdown, SARIF, and optional inline GitHub review comments.
-6. **Gate** the pipeline with a predictable exit code or an OPA/Rego policy.
+The CLI parses a report into typed findings. Each source path is resolved below the configured repository root before context is read. Compliance mappings are attached before a provider classifies the finding. The resulting report can be written as JSON, Markdown, or SARIF and can be used to gate a build.
 
-## Built for real pipelines
+The local mock provider keeps demos and CI deterministic. Real providers are opt in because source context may leave the build environment. OPA policies fail closed when they are missing, invalid, or incomplete.
 
-- A reusable Docker-based GitHub Action, plus a Jenkins example.
-- Provider fallback, circuit breakers, bounded concurrency, and SQLite caching.
-- SARIF output for GitHub Advanced Security.
-- A small dependency-light JavaScript renderer for sharing reports in a browser.
-- The project runs its own Bandit SARIF scan of `src/` through Guardrail on every CI/Pages build. See the [Security Report](./security/).
+## What you can explore
 
-## Try it
-
-Open the [illustrative live demo](./demo/). It runs in the browser with bundled sample reports and needs no API key. Sample data is intentionally synthetic; it is not a scan of your code.
-
-For local use:
+- Run the [browser demo](./demo/) with synthetic reports and custom input. Files stay in the browser
+- Read the [architecture notes](./architecture/) for the parser, context, compliance, provider, reporter, and policy boundaries
+- Open the [security report](./security/) to see the scoped self-assessment and its limits
+- Inspect the [GitHub Action](https://github.com/samueladegnan/ai-cicd-security-guardrail/blob/main/action.yml), Docker entrypoint, and CI workflow
+- Run the CLI locally with the committed SARIF fixtures
 
 ```bash
 pip install -e ".[dev]"
 guardrail tests/fixtures/sample.sarif --provider mock --repo-root . --output-markdown report.md
 ```
 
-The mock provider is deterministic and local, which makes it useful for tests, demos, and reproducible CI. Select a real provider only when your data-handling policy allows source context to leave the build environment.
+The sample produces one high-priority result and one benign warning. The clean fixture exercises a passing run.
+
+## Why this project is worth inspecting
+
+- Typed Python models and parser adapters for three common report formats
+- Repo-root and symlink-aware source confinement
+- Bounded concurrency, retries, provider fallback, circuit breakers, and SQLite caching
+- Compliance mapping for CERT C, MISRA C, FIPS, OWASP, CWE, and CIS AWS
+- SARIF output, GitHub review comments, OPA policy gating, and a reusable report renderer
+- CI that checks code quality, behavior, container builds, dependencies, generated assets, Bandit severity gates, and a scoped self-assessment
 
 ## About the author
 
-AI Guardrail is maintained by [Sam Degnan](https://github.com/samueladegnan), a software engineer focused on secure systems, automation, and practical developer tooling.
-
-This project was built with AI assistance. AI tools supported exploration, implementation, documentation, and testing, while the project direction, decisions, review, and final responsibility remain with the maintainer.
+Built and maintained by [Sam Degnan](https://github.com/samueladegnan), focused on secure systems, automation, and practical developer tooling.

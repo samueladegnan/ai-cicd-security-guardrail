@@ -215,7 +215,8 @@ class TestGeminiClient:
         assert "UNCLEAR" in result
 
         request = responses.calls[0].request
-        assert "key=test-key" in request.url
+        assert request.headers["x-goog-api-key"] == "test-key"
+        assert "key=" not in request.url
         assert request.headers["Content-Type"] == "application/json"
 
     @responses.activate

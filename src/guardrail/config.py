@@ -62,6 +62,21 @@ class Settings:
     # Optional compliance controls
     frameworks: tuple[str, ...] = ("cert_c", "misra_c", "fips")
 
+    def __post_init__(self) -> None:
+        """Reject invalid runtime limits before they reach worker/API code."""
+        if self.max_concurrency < 1:
+            raise ValueError("max_concurrency must be at least 1")
+        if self.timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be greater than 0")
+        if self.retries < 0:
+            raise ValueError("retries must not be negative")
+        if self.context_lines_before < 0 or self.context_lines_after < 0:
+            raise ValueError("context line counts must not be negative")
+        if self.circuit_breaker_threshold < 1:
+            raise ValueError("circuit_breaker_threshold must be at least 1")
+        if self.circuit_breaker_timeout_seconds <= 0:
+            raise ValueError("circuit_breaker_timeout_seconds must be greater than 0")
+
     @classmethod
     def from_env(cls) -> Settings:
         """Build a Settings instance from environment variables."""
