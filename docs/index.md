@@ -22,13 +22,9 @@ The CLI parses a report into typed findings. Each source path is resolved below 
 
 The local mock provider keeps demos and CI deterministic. Real providers are opt in because source context may leave the build environment. OPA policies fail closed when they are missing, invalid, or incomplete.
 
-## What you can explore
+## Run the core path
 
-- Run the [browser demo](./demo/) with synthetic reports and custom input. Files stay in the browser
-- Read the [architecture notes](./architecture/) for the parser, context, compliance, provider, reporter, and policy boundaries
-- Open the [security report](./security/) to see the scoped self-assessment and its limits
-- Inspect the [GitHub Action](https://github.com/samueladegnan/ai-cicd-security-guardrail/blob/main/action.yml), Docker entrypoint, and CI workflow
-- Run the CLI locally with the committed SARIF fixtures
+The project is easiest to evaluate from the command line. This committed fixture exercises parsing, bounded source-context lookup, deterministic classification, report generation, and the CI decision without requiring an API key.
 
 ```bash
 pip install -e ".[dev]"

@@ -33,7 +33,7 @@ wide: true
   </div>
 
   <div class="report-disclaimer" role="note">
-    <strong>How to read this report:</strong> these are automated triage results, not a guarantee that the repository is vulnerability free. Verify findings with an engineer before accepting or dismissing them.
+    <strong>How to read this report:</strong> these are automated triage results, not a guarantee that the repository is vulnerability free. Verify findings with an engineer before accepting or dismissing them. Container CI publishes the complete Trivy report, fails on fixable HIGH/CRITICAL vulnerabilities or detected secrets, and keeps unfixed findings visible for review.
   </div>
 
   <div id="security-live-success" class="live-scan-success" role="status" style="display: none">

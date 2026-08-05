@@ -60,7 +60,7 @@ guardrail tests/fixtures/clean.sarif --provider mock --repo-root .
 - SARIF output for GitHub Advanced Security and optional GitHub review comments
 - A Docker-based GitHub Action that keeps action inputs and API keys out of process arguments
 - A separate dependency-light JavaScript renderer with filtering, search, sorting, expandable context, and export
-- CI checks for tests, formatting, types, generated assets, container builds, Bandit severity gates, pip-audit, Trivy high/critical findings, and a scoped self-assessment
+- CI checks for tests, formatting, types, generated assets, container builds, Bandit severity gates, pip-audit, a complete Trivy report, fixable HIGH/CRITICAL vulnerabilities, detected secrets, and a scoped self-assessment
 
 ## Run locally
 
@@ -142,7 +142,7 @@ docs/                          Jekyll site, demo, architecture, and report
 tests/                         Python tests and report fixtures
 ```
 
-Read the [architecture notes](docs/architecture.md) for the data flow and extension points. The [security report](docs/security.md) explains the self-assessment scope. Low-severity Bandit findings are published for review, while medium and high findings fail CI before the Guardrail triage step.
+Read the [architecture notes](docs/architecture.md) for the data flow and extension points. The [security report](docs/security.md) explains the self-assessment scope. Low-severity Bandit findings are published for review, while medium and high findings fail CI before the Guardrail triage step. Container CI preserves all Trivy findings in an artifact, fails on fixable HIGH/CRITICAL vulnerabilities or detected secrets, and leaves unfixed findings visible for review rather than treating them as remediated.
 
 ## Security and privacy
 
