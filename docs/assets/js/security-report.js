@@ -5,7 +5,7 @@
  * clearly labeled so they are never mistaken for repository findings.
  */
 (function () {
-  "use strict";
+  "use strict"
 
   function ready(fn) {
     if (document.readyState !== "loading") {
@@ -35,34 +35,75 @@
     statusLabel.replaceChildren(dot, document.createTextNode(` ${text}`))
   }
 
+  function normalizeReportPath(value) {
+    const raw = String(value || "")
+    if (/^[\\/]/.test(raw)) return ""
+
+    let normalized = raw.replace(/\\/g, "/")
+    while (normalized.startsWith("./")) {
+      normalized = normalized.slice(2)
+    }
+    return normalized
+  }
+
+  function findingPath(result) {
+    const finding = result && result.finding ? result.finding : result || {}
+    return normalizeReportPath(finding.file_path || finding.filePath || result.file_path || result.filePath)
+  }
+
+  function isRealScopedFinding(result) {
+    const path = findingPath(result)
+    const segments = path.split("/")
+    return path.startsWith("src/") && !segments.some((segment) =>
+      !segment || segment === "." || segment === ".." || segment === "sample_code"
+    )
+  }
+
+  function filterToScopedReport(report) {
+    const results = report.results.filter(isRealScopedFinding)
+    const summary = results.reduce(
+      (counts, result) => {
+        counts.total += 1
+        if (result.verdict === "HIGH_PRIORITY") counts.high_priority += 1
+        if (result.verdict === "FALSE_POSITIVE") counts.false_positive += 1
+        if (result.verdict === "UNCLEAR") counts.unclear += 1
+        return counts
+      },
+      { total: 0, high_priority: 0, false_positive: 0, unclear: 0 }
+    )
+    return { ...report, summary, results }
+  }
+
   function showExampleNotice(reason = "unavailable") {
     setDisplay("security-example-notice", "block")
     setDisplay("security-live-findings", "none")
 
     if (reason === "clean") {
-      setDisplay("security-live-success", "block")
-      setText("security-example-label", "Synthetic dashboard, scoped scan clean")
-      setText("security-example-title", "Illustrative findings are shown below")
+      setText("security-example-label", "No real issues found")
+      setText(
+        "security-example-inline-copy",
+        "Example data is displayed because no real issues were found."
+      )
+      setText("security-example-title", "Example data is shown instead")
       setText(
         "security-example-copy",
-        "The scoped self-assessment returned no findings in this repository's src/ tree. The dashboard below uses committed synthetic data to demonstrate the renderer. These examples are not repository issues."
+        "The findings below are synthetic examples for inspecting the report interface, not repository issues."
       )
-      setStatus("Scoped scan clean, synthetic dashboard", true)
+      setStatus("No real issues found, example data shown", true)
     } else {
-      setDisplay("security-live-success", "none")
-      setText("security-example-label", "Synthetic dashboard, scan unavailable")
-      setText("security-example-title", "Illustrative findings are shown below")
+      setText("security-example-label", "Scan unavailable")
+      setText("security-example-inline-copy", "Example findings are shown for interface demonstration.")
+      setText("security-example-title", "Example findings, not a live scan")
       setText(
         "security-example-copy",
-        "The scoped self-assessment report is not available in this build. This page is showing committed synthetic data to demonstrate the dashboard. Every finding below is example data, not a repository issue."
+        "The scoped self-assessment report is not available in this build, so this page cannot confirm whether the repository has findings. Every finding below is synthetic and not a repository issue."
       )
-      setStatus("Synthetic example report", true)
+      setStatus("Scan unavailable, example findings", true)
     }
   }
 
   function showScopedFindings() {
     setDisplay("security-example-notice", "none")
-    setDisplay("security-live-success", "none")
     setDisplay("security-live-findings", "block")
     setDisplay("security-empty", "none")
     setStatus("Scoped src/ self-assessment")
@@ -70,7 +111,6 @@
 
   function showEmptyState(message = null) {
     setDisplay("security-example-notice", "none")
-    setDisplay("security-live-success", "none")
     setDisplay("security-live-findings", "none")
     setDisplay("security-dashboard", "none")
     setDisplay("security-empty", "block")
@@ -79,12 +119,12 @@
 
   function showExampleFailureAfterCleanScan() {
     showEmptyState()
-    setText("security-empty-title", "Scoped self-assessment is clean")
+    setText("security-empty-title", "No real issues found")
     setText(
       "security-empty-copy",
-      "The scoped scan returned no findings, but the synthetic dashboard could not be loaded in this build. No example findings are being shown."
+      "The scoped scan found no real issues, but the example data could not be loaded in this build. No example findings are being shown."
     )
-    setStatus("Scoped scan clean, examples unavailable", true)
+    setStatus("No real issues, example data unavailable", true)
   }
 
   function showExampleFailureAfterUnavailableScan() {
@@ -92,7 +132,7 @@
     setText("security-empty-title", "Security report unavailable")
     setText(
       "security-empty-copy",
-      "The scoped self-assessment and synthetic dashboard could not be loaded in this build. Please retry after the next Pages build or explore the browser demo."
+      "The scoped self-assessment and example data could not be loaded in this build. Please retry after the next Pages build or explore the browser demo."
     )
     setStatus("Security report unavailable", true)
   }
@@ -121,7 +161,9 @@
     const renderer = new GuardrailReportRenderer(dashboardElement, {
       showChart: true,
       showToolbar: true,
-      defaultSort: "severity"
+      defaultSort: "severity",
+      example: isExample,
+      exampleReason
     })
 
     renderer.render(report)
@@ -139,9 +181,11 @@
   ready(async () => {
     const liveReport = window.GUARDRAIL_SECURITY_REPORT
     const hasLiveReport = liveReport && typeof liveReport === "object" && Array.isArray(liveReport.results)
+    const scopedLiveReport = hasLiveReport ? filterToScopedReport(liveReport) : null
+    const hasRealFindings = scopedLiveReport && scopedLiveReport.results.length > 0
 
-    if (hasLiveReport && liveReport.results.length > 0) {
-      render(liveReport, false)
+    if (hasRealFindings) {
+      render(scopedLiveReport, false)
       return
     }
 

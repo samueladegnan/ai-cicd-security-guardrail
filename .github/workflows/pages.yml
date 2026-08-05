@@ -92,7 +92,29 @@ jobs:
           test -s bandit-report.sarif
           test -s docs/_data/guardrail-report.json
           test -s docs/_data/guardrail-report.md
-          python -c "import json; data = json.load(open('docs/_data/guardrail-report.json')); assert 'summary' in data and 'results' in data, 'Invalid report structure'; print(data['summary'])"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path("docs/_data/guardrail-report.json").read_text())
+          assert "summary" in data and "results" in data, "Invalid report structure"
+          out_of_scope = []
+          for result in data["results"]:
+              finding = result.get("finding") or result
+              path = str(finding.get("file_path") or finding.get("filePath") or "")
+              normalized = path.replace(chr(92), "/")
+              while normalized.startswith("./"):
+                  normalized = normalized[2:]
+              segments = normalized.split("/")
+              if (
+                  not normalized.startswith("src/")
+                  or any(segment in {"", ".", "..", "sample_code"} for segment in segments)
+              ):
+                  out_of_scope.append(path or "<missing path>")
+          if out_of_scope:
+              raise SystemExit(f"Self-assessment contains out-of-scope findings: {out_of_scope}")
+          print(data["summary"])
+          PY
           cp bandit-report.sarif docs/_data/bandit-report.sarif
 
       - name: Upload self-assessment inputs and outputs

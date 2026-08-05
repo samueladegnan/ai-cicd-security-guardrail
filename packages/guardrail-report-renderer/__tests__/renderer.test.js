@@ -178,6 +178,30 @@ describe("GuardrailReportRenderer", () => {
     expect(badge.classList.contains("ci-fail")).toBe(true);
   });
 
+  test("shows a persistent example banner only for synthetic reports", () => {
+    const renderer = new GuardrailReportRenderer(container, { example: true, exampleReason: "clean" })
+    renderer.render(sampleReport)
+
+    expect(container.querySelector(".report-provenance").hidden).toBe(false)
+    expect(container.querySelector(".report-provenance-badge").textContent).toBe("No real issues found")
+    expect(container.querySelector(".report-provenance-copy").textContent).toBe(
+      "Example data is displayed because no real issues were found."
+    )
+    expect(container.querySelector(".ci-verdict-badge").textContent).toBe("Example: CI would fail")
+
+    const unavailableRenderer = new GuardrailReportRenderer(container, { example: true, exampleReason: "unavailable" })
+    unavailableRenderer.render(sampleReport)
+    expect(container.querySelector(".report-provenance-copy").textContent).toBe(
+      "The live scan is unavailable, so these synthetic examples cannot be treated as repository findings."
+    )
+
+    const liveRenderer = new GuardrailReportRenderer(container, { example: false })
+    liveRenderer.render({ ...sampleReport, provenance: "synthetic self-assessment metadata" })
+    expect(container.querySelector(".report-provenance").hidden).toBe(true)
+    expect(container.querySelector(".report-provenance").getAttribute("hidden")).not.toBeNull()
+    expect(container.querySelector(".ci-verdict-badge").textContent).toBe("CI: Fail")
+  })
+
   test("shows CI pass badge when no high-priority findings exist", () => {
     const report = {
       summary: { total: 1, high_priority: 0, false_positive: 1, unclear: 0 },

@@ -13,10 +13,12 @@ const securityReportScript = fs.readFileSync(
 function mountSecurityReport() {
   document.body.innerHTML = `
     <div class="report-status-label"></div>
-    <div id="security-live-success" style="display: none"></div>
     <div id="security-live-findings" style="display: none"></div>
     <div id="security-example-notice" style="display: none">
-      <div id="security-example-label"></div>
+      <div class="example-report-notice__status">
+        <div id="security-example-label"></div>
+        <span id="security-example-inline-copy"></span>
+      </div>
       <h2 id="security-example-title"></h2>
       <p id="security-example-copy"></p>
     </div>
@@ -40,6 +42,7 @@ async function runSecurityReport({ liveReport, exampleReport, fetchError = null 
 
     render(report) {
       this.container.dataset.renderedResults = String(report.results.length)
+      this.container.dataset.summary = JSON.stringify(report.summary || {})
     }
   }
 
@@ -72,16 +75,80 @@ describe("Security report page state handling", () => {
 
   test("renders scoped findings and hides the synthetic notice", async () => {
     const fetchMock = await runSecurityReport({
-      liveReport: { results: [{ finding: { rule_id: "scoped-rule" } }] },
+      liveReport: { results: [{ finding: { rule_id: "scoped-rule", file_path: "src/app.py" } }] },
       exampleReport: { results: [{ finding: { rule_id: "sample-rule" } }] }
     })
 
     expect(fetchMock).not.toHaveBeenCalled()
     expect(document.getElementById("security-live-findings").style.display).toBe("block")
-    expect(document.getElementById("security-live-success").style.display).toBe("none")
     expect(document.getElementById("security-example-notice").style.display).toBe("none")
     expect(document.getElementById("security-dashboard").dataset.renderedResults).toBe("1")
     expect(document.querySelector(".report-status-label").textContent).toContain("Scoped src/")
+  })
+
+  test("ignores intentional sample-code findings and shows synthetic data", async () => {
+    const fetchMock = await runSecurityReport({
+      liveReport: {
+        results: [
+          { finding: { file_path: "sample_code/vulnerable.c" } },
+          { finding: { file_path: "sample_code/false_positive.c" } }
+        ]
+      },
+      exampleReport: { results: [{ finding: { rule_id: "sample-rule" } }] }
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith("/example-report.json")
+    expect(document.getElementById("security-live-findings").style.display).toBe("none")
+    expect(document.getElementById("security-example-notice").style.display).toBe("block")
+    expect(document.getElementById("security-example-label").textContent).toBe(
+      "No real issues found"
+    )
+    expect(document.getElementById("security-example-inline-copy").textContent).toBe(
+      "Example data is displayed because no real issues were found."
+    )
+    expect(document.getElementById("security-dashboard").dataset.renderedResults).toBe("1")
+  })
+
+  test("normalizes paths and enforces the src boundary", async () => {
+    await runSecurityReport({
+      liveReport: {
+        results: [
+          { finding: { file_path: ".\\src\\windows.py", rule_id: "windows" } },
+          { finding: { file_path: "./src/relative.py", rule_id: "relative" } },
+          { finding: { file_path: "src-other/not-scoped.py", rule_id: "wrong-root" } },
+          { finding: { file_path: "../src/traversal.py", rule_id: "traversal" } },
+          { finding: { file_path: "src/sample_code/example.py", rule_id: "nested-sample" } },
+          { finding: { rule_id: "missing-path" } }
+        ]
+      },
+      exampleReport: { results: [{ finding: { rule_id: "sample-rule" } }] }
+    })
+
+    expect(document.getElementById("security-live-findings").style.display).toBe("block")
+    expect(document.getElementById("security-example-notice").style.display).toBe("none")
+    expect(document.getElementById("security-dashboard").dataset.renderedResults).toBe("2")
+  })
+
+  test("renders only in-scope src findings from a mixed report", async () => {
+    await runSecurityReport({
+      liveReport: {
+        results: [
+          { finding: { file_path: "src/app.py", rule_id: "scoped-rule" }, verdict: "HIGH_PRIORITY" },
+          { finding: { file_path: "sample_code/vulnerable.c" }, verdict: "HIGH_PRIORITY" }
+        ]
+      },
+      exampleReport: { results: [{ finding: { rule_id: "sample-rule" } }] }
+    })
+
+    expect(document.getElementById("security-live-findings").style.display).toBe("block")
+    expect(document.getElementById("security-example-notice").style.display).toBe("none")
+    expect(document.getElementById("security-dashboard").dataset.renderedResults).toBe("1")
+    expect(JSON.parse(document.getElementById("security-dashboard").dataset.summary)).toEqual({
+      total: 1,
+      high_priority: 1,
+      false_positive: 0,
+      unclear: 0
+    })
   })
 
   test("states that the scoped scan was clean while rendering synthetic data", async () => {
@@ -91,11 +158,18 @@ describe("Security report page state handling", () => {
     })
 
     expect(fetchMock).toHaveBeenCalledWith("/example-report.json")
-    expect(document.getElementById("security-live-success").style.display).toBe("block")
     expect(document.getElementById("security-example-notice").style.display).toBe("block")
-    expect(document.getElementById("security-example-label").textContent).toContain("scoped scan clean")
+    expect(document.getElementById("security-example-label").textContent).toBe(
+      "No real issues found"
+    )
+    expect(document.getElementById("security-example-inline-copy").textContent).toBe(
+      "Example data is displayed because no real issues were found."
+    )
+    expect(document.getElementById("security-example-title").textContent).toBe(
+      "Example data is shown instead"
+    )
     expect(document.getElementById("security-example-copy").textContent).toContain(
-      "scoped self-assessment returned no findings"
+      "findings below are synthetic examples"
     )
     expect(document.getElementById("security-example-copy").textContent).toContain(
       "not repository issues"
@@ -104,7 +178,7 @@ describe("Security report page state handling", () => {
     expect(document.getElementById("security-empty").style.display).toBe("none")
   })
 
-  test("uses clearly labeled synthetic data when the scoped report is unavailable", async () => {
+  test("does not claim a clean scan when the scoped report is unavailable", async () => {
     await runSecurityReport({
       liveReport: undefined,
       exampleReport: { results: [{ finding: { rule_id: "sample-rule" } }] }
@@ -112,10 +186,13 @@ describe("Security report page state handling", () => {
 
     expect(document.getElementById("security-example-notice").style.display).toBe("block")
     expect(document.getElementById("security-example-label").textContent).toContain(
-      "scan unavailable"
+      "Scan unavailable"
+    )
+    expect(document.getElementById("security-example-inline-copy").textContent).toBe(
+      "Example findings are shown for interface demonstration."
     )
     expect(document.getElementById("security-example-copy").textContent).toContain(
-      "committed synthetic data"
+      "cannot confirm whether the repository has findings"
     )
     expect(document.getElementById("security-dashboard").dataset.renderedResults).toBe("1")
     expect(document.getElementById("security-empty").style.display).toBe("none")
@@ -129,13 +206,12 @@ describe("Security report page state handling", () => {
       fetchError: new Error("network unavailable")
     })
 
-    expect(document.getElementById("security-live-success").style.display).toBe("none")
     expect(document.getElementById("security-empty").style.display).toBe("block")
     expect(document.getElementById("security-empty-title").textContent).toBe(
-      "Scoped self-assessment is clean"
+      "No real issues found"
     )
     expect(document.getElementById("security-empty-copy").textContent).toContain(
-      "synthetic dashboard could not be loaded"
+      "example data could not be loaded"
     )
     expect(document.getElementById("security-dashboard").style.display).toBe("none")
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -158,7 +234,7 @@ describe("Security report page state handling", () => {
       "Security report unavailable"
     )
     expect(document.getElementById("security-empty-copy").textContent).toContain(
-      "scoped self-assessment and synthetic dashboard could not be loaded"
+      "scoped self-assessment and example data could not be loaded"
     )
     expect(document.getElementById("security-dashboard").style.display).toBe("none")
     expect(consoleErrorSpy).toHaveBeenCalledWith(

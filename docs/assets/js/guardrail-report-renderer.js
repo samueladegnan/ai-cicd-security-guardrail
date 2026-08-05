@@ -96,6 +96,10 @@
 
     _scaffold() {
       this.container.innerHTML = `
+        <div class="report-provenance" id="${this.id}-provenance" hidden>
+          <span class="report-provenance-badge">No real issues found</span>
+          <span class="report-provenance-copy">Example data is displayed because no real issues were found.</span>
+        </div>
         <div class="summary-card" id="${this.id}-summary">
           <div class="summary-header">
             <div>
@@ -174,7 +178,7 @@
         </div>
       `;
 
-      this.summaryCard = this._element("summary");
+        this.summaryCard = this._element("summary");
     }
 
     _bindControls() {
@@ -258,6 +262,7 @@
       this.report = GuardrailReportRenderer.normalizeReport(report);
       this.results = this.report.results;
 
+      this._updateProvenance(report);
       this._updateSummary(this.report.summary);
       if (this.options.showChart) {
         this._renderChart(this.report.summary);
@@ -265,6 +270,28 @@
       this.setVerdictFilter("all", false);
 
       this.container.classList.add("fade-in");
+    }
+
+    _updateProvenance(report) {
+      const provenance = this._element("provenance");
+      if (!provenance) return;
+
+      const reportProvenance = String(report?.provenance || "").toLowerCase();
+      const inferredExample = report?.report_type === "illustrative-demo" ||
+        reportProvenance.includes("synthetic") ||
+        reportProvenance.includes("example") ||
+        reportProvenance.includes("demo");
+      const isExample = typeof this.options.example === "boolean"
+        ? this.options.example
+        : inferredExample;
+
+      provenance.hidden = !isExample;
+      if (!isExample) return;
+
+      const copy = provenance.querySelector(".report-provenance-copy");
+      if (copy && this.options.exampleReason !== "clean") {
+        copy.textContent = "The live scan is unavailable, so these synthetic examples cannot be treated as repository findings.";
+      }
     }
 
     _updateSummary(summary) {
@@ -280,13 +307,17 @@
 
       const ciBadge = this._element("ci-verdict");
       if (summary.high_priority > 0) {
-        ciBadge.textContent = "CI: Fail";
+        ciBadge.textContent = this.options.example ? "Example: CI would fail" : "CI: Fail";
         ciBadge.className = "ci-verdict-badge ci-fail";
-        ciBadge.title = "Build would fail because high-priority risks remain.";
+        ciBadge.title = this.options.example
+          ? "Synthetic example only. A real build would fail because high-priority risks remain."
+          : "Build would fail because high-priority risks remain.";
       } else {
-        ciBadge.textContent = "CI: Pass";
+        ciBadge.textContent = this.options.example ? "Example: CI would pass" : "CI: Pass";
         ciBadge.className = "ci-verdict-badge ci-pass";
-        ciBadge.title = "Build would pass; no high-priority risks detected.";
+        ciBadge.title = this.options.example
+          ? "Synthetic example only. No high-priority risks are represented in this example."
+          : "Build would pass; no high-priority risks detected.";
       }
     }
 

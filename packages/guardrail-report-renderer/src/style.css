@@ -40,6 +40,42 @@
   border: 0;
 }
 
+/* Report provenance */
+.report-provenance {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  color: #78350f;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-left: 4px solid #f59e0b;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.report-provenance[hidden] {
+  display: none;
+}
+
+.report-provenance-badge {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.55rem;
+  color: #fff;
+  background: #b45309;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.report-provenance-copy {
+  font-weight: 600;
+}
+
 /* Summary */
 .summary-card,
 .results-card {
@@ -438,6 +474,12 @@
 }
 
 @media (max-width: 600px) {
+  .report-provenance {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
   .summary-header {
     flex-direction: column;
   }

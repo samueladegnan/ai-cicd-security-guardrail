@@ -11,7 +11,7 @@ wide: true
     <div class="report-status-label"><span class="status-dot" aria-hidden="true"></span> Scoped <code>src/</code> self-assessment</div>
     <h1>Security Report</h1>
     <p class="security-report-lead">
-      This page publishes the latest Bandit and Guardrail report for this repository's <code>src/</code> tree. It is an automated review aid with a defined scope. It is not a full security audit.
+      This page publishes the latest Bandit and Guardrail report for this repository's <code>src/</code> tree. It is an automated review aid with a defined scope, not a full security audit.
     </p>
     <dl class="security-report-details">
       <div>
@@ -36,14 +36,6 @@ wide: true
     <strong>How to read this report:</strong> these are automated triage results, not a guarantee that the repository is vulnerability free. Verify findings with an engineer before accepting or dismissing them. Container CI publishes the complete Trivy report, fails on fixable HIGH/CRITICAL vulnerabilities or detected secrets, and keeps unfixed findings visible for review.
   </div>
 
-  <div id="security-live-success" class="live-scan-success" role="status" style="display: none">
-    <div class="live-scan-success__label">Scoped scan complete</div>
-    <h2>No findings in the scoped self-assessment</h2>
-    <p>
-      The latest Pages build scanned this repository's <code>src/</code> tree and returned zero findings. The dashboard below is synthetic so the renderer remains inspectable. It does not represent issues in this repository.
-    </p>
-  </div>
-
   <div id="security-live-findings" class="live-scan-findings" role="status" style="display: none">
     <div class="live-scan-findings__label">Scoped scan findings</div>
     <h2>Findings from the self-assessment</h2>
@@ -53,10 +45,13 @@ wide: true
   </div>
 
   <div id="security-example-notice" class="example-report-notice" role="status" style="display: none">
-    <div id="security-example-label" class="example-report-notice__label">Synthetic dashboard</div>
-    <h2 id="security-example-title">Illustrative findings are shown below</h2>
+    <div class="example-report-notice__status">
+      <div id="security-example-label" class="example-report-notice__label">No real issues found</div>
+      <span id="security-example-inline-copy" class="example-report-notice__inline-copy">Example data is displayed because no real issues were found.</span>
+    </div>
+    <h2 id="security-example-title">Example data is shown instead</h2>
     <p id="security-example-copy">
-      The scoped self-assessment is unavailable in this build. This page is showing committed synthetic data to demonstrate the dashboard. Every finding below is example data, not a repository issue.
+      The findings below are synthetic examples for inspecting the report interface, not repository issues.
     </p>
   </div>
 

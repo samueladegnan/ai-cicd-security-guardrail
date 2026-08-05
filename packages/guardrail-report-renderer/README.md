@@ -83,6 +83,7 @@ with a nested `finding` object) or a flat/normalized shape.
 | `defaultSort` | `string` | `"severity"` | Initial sort: `"severity"`, `"confidence"`, or `"location"`. |
 | `onRowClick` | `function` | `null` | Called when a finding row is expanded. |
 | `emptyMessage` | `string` | `"No findings match the current filters."` | Message shown when the table is empty. |
+| `example` | `boolean` | `false` | Marks the rendered report as synthetic example data and changes provenance and CI wording accordingly. |
 
 ## API
 
